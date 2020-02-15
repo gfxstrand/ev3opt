@@ -1,0 +1,9 @@
+[package]
+name = "ev3opt"
+version = "0.1.0"
+authors = ["Jason Ekstrand <jason@jlekstrand.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
