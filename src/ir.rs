@@ -1,5 +1,8 @@
 use std::io;
 
+mod enums;
+use enums::Opcode;
+
 pub enum Parameter {
     Local(u32),
     Global(u32),
