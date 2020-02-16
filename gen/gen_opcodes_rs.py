@@ -66,6 +66,17 @@ def parse_csv(f):
             last = Opcode(op, value, proto)
             opcodes[op] = last
 
+    # Throw out opcodes which don't have prototypes
+    for op in list(opcodes.keys()):
+        if opcodes[op].subcodes:
+            for subcode in list(opcodes[op].subcodes.keys()):
+                if opcodes[op].subcodes[subcode].proto is None:
+                    del opcodes[op].subcodes[subcode]
+            if not opcodes[op].subcodes:
+                del opcodes[op]
+        elif opcodes[op].proto is None:
+            del opcodes[op]
+
     return opcodes
 
 TEMPLATE = Template(LICENSE + """\
@@ -152,7 +163,7 @@ impl Opcode {
         match self {
 % for op in opcodes.values():
 % if op.subcodes:
-            Opcode::${op.name}(val) => match val {
+            Opcode::${op.name}(subcode) => match subcode {
 % for subcode in op.subcodes.values():
                 ${op.name}Subcode::${subcode.name} => "${op.name}(${subcode.name})",
 % endfor
@@ -171,6 +182,22 @@ impl Opcode {
             Opcode::${op.name}(_) => ${op.value},
 % else:
             Opcode::${op.name} => ${op.value},
+% endif
+% endfor
+        }
+    }
+
+    pub fn get_proto(&self) -> &'static str {
+        match self {
+% for op in opcodes.values():
+% if op.subcodes:
+            Opcode::${op.name}(subcode) => match subcode {
+% for subcode in op.subcodes.values():
+                ${op.name}Subcode::${subcode.name} => "${subcode.proto}",
+% endfor
+            },
+% else:
+            Opcode::${op.name} => "${op.proto}",
 % endif
 % endfor
         }
