@@ -245,7 +245,7 @@ pub enum Opcode {
     #[allow(non_camel_case_types)]
     Info = 0x7C,
     #[allow(non_camel_case_types)]
-    Strings = 0x7D,
+    String = 0x7D,
     #[allow(non_camel_case_types)]
     MemoryWrite = 0x7E,
     #[allow(non_camel_case_types)]
@@ -307,9 +307,9 @@ pub enum Opcode {
     #[allow(non_camel_case_types)]
     InputReady = 0x9C,
     #[allow(non_camel_case_types)]
-    InputReadsi = 0x9D,
+    InputReadSi = 0x9D,
     #[allow(non_camel_case_types)]
-    InputReadext = 0x9E,
+    InputReadExt = 0x9E,
     #[allow(non_camel_case_types)]
     InputWrite = 0x9F,
     #[allow(non_camel_case_types)]
@@ -542,7 +542,7 @@ impl Opcode {
             0x7A => Ok(Opcode::JrGteq32),
             0x7B => Ok(Opcode::JrGteqf),
             0x7C => Ok(Opcode::Info),
-            0x7D => Ok(Opcode::Strings),
+            0x7D => Ok(Opcode::String),
             0x7E => Ok(Opcode::MemoryWrite),
             0x7F => Ok(Opcode::MemoryRead),
             0x80 => Ok(Opcode::UiFlush),
@@ -573,8 +573,8 @@ impl Opcode {
             0x9A => Ok(Opcode::InputRead),
             0x9B => Ok(Opcode::InputTest),
             0x9C => Ok(Opcode::InputReady),
-            0x9D => Ok(Opcode::InputReadsi),
-            0x9E => Ok(Opcode::InputReadext),
+            0x9D => Ok(Opcode::InputReadSi),
+            0x9E => Ok(Opcode::InputReadExt),
             0x9F => Ok(Opcode::InputWrite),
             0xA0 => Ok(Opcode::OutputGetType),
             0xA1 => Ok(Opcode::OutputSetType),
@@ -756,7 +756,7 @@ impl Opcode {
             Opcode::JrGteq32 => "JrGteq32",
             Opcode::JrGteqf => "JrGteqf",
             Opcode::Info => "Info",
-            Opcode::Strings => "Strings",
+            Opcode::String => "String",
             Opcode::MemoryWrite => "MemoryWrite",
             Opcode::MemoryRead => "MemoryRead",
             Opcode::UiFlush => "UiFlush",
@@ -787,8 +787,8 @@ impl Opcode {
             Opcode::InputRead => "InputRead",
             Opcode::InputTest => "InputTest",
             Opcode::InputReady => "InputReady",
-            Opcode::InputReadsi => "InputReadsi",
-            Opcode::InputReadext => "InputReadext",
+            Opcode::InputReadSi => "InputReadSi",
+            Opcode::InputReadExt => "InputReadExt",
             Opcode::InputWrite => "InputWrite",
             Opcode::OutputGetType => "OutputGetType",
             Opcode::OutputSetType => "OutputSetType",
@@ -2287,7 +2287,7 @@ impl Buttontype {
     }
 }
 #[allow(dead_code)]
-pub enum Mathtype {
+pub enum MathSubcode {
     #[allow(non_camel_case_types)]
     EXP = 1,
     #[allow(non_camel_case_types)]
@@ -2332,112 +2332,112 @@ pub enum Mathtype {
     TRUNC = 21,
 }
 
-impl Mathtype {
+impl MathSubcode {
     #[allow(dead_code)]
-    pub fn from_i32(i: i32) -> std::result::Result<Mathtype, &'static str> {
+    pub fn from_i32(i: i32) -> std::result::Result<MathSubcode, &'static str> {
         match i {
-            1 => Ok(Mathtype::EXP),
-            2 => Ok(Mathtype::MOD),
-            3 => Ok(Mathtype::FLOOR),
-            4 => Ok(Mathtype::CEIL),
-            5 => Ok(Mathtype::ROUND),
-            6 => Ok(Mathtype::ABS),
-            7 => Ok(Mathtype::NEGATE),
-            8 => Ok(Mathtype::SQRT),
-            9 => Ok(Mathtype::LOG),
-            10 => Ok(Mathtype::LN),
-            11 => Ok(Mathtype::SIN),
-            12 => Ok(Mathtype::COS),
-            13 => Ok(Mathtype::TAN),
-            14 => Ok(Mathtype::ASIN),
-            15 => Ok(Mathtype::ACOS),
-            16 => Ok(Mathtype::ATAN),
-            17 => Ok(Mathtype::MOD8),
-            18 => Ok(Mathtype::MOD16),
-            19 => Ok(Mathtype::MOD32),
-            20 => Ok(Mathtype::POW),
-            21 => Ok(Mathtype::TRUNC),
-            _ => Err("Invalid enum value for Mathtype")
+            1 => Ok(MathSubcode::EXP),
+            2 => Ok(MathSubcode::MOD),
+            3 => Ok(MathSubcode::FLOOR),
+            4 => Ok(MathSubcode::CEIL),
+            5 => Ok(MathSubcode::ROUND),
+            6 => Ok(MathSubcode::ABS),
+            7 => Ok(MathSubcode::NEGATE),
+            8 => Ok(MathSubcode::SQRT),
+            9 => Ok(MathSubcode::LOG),
+            10 => Ok(MathSubcode::LN),
+            11 => Ok(MathSubcode::SIN),
+            12 => Ok(MathSubcode::COS),
+            13 => Ok(MathSubcode::TAN),
+            14 => Ok(MathSubcode::ASIN),
+            15 => Ok(MathSubcode::ACOS),
+            16 => Ok(MathSubcode::ATAN),
+            17 => Ok(MathSubcode::MOD8),
+            18 => Ok(MathSubcode::MOD16),
+            19 => Ok(MathSubcode::MOD32),
+            20 => Ok(MathSubcode::POW),
+            21 => Ok(MathSubcode::TRUNC),
+            _ => Err("Invalid enum value for MathSubcode")
         }
     }
 
     #[allow(dead_code)]
     pub fn to_str(&self) -> &'static str {
         match self {
-            Mathtype::EXP => "EXP",
-            Mathtype::MOD => "MOD",
-            Mathtype::FLOOR => "FLOOR",
-            Mathtype::CEIL => "CEIL",
-            Mathtype::ROUND => "ROUND",
-            Mathtype::ABS => "ABS",
-            Mathtype::NEGATE => "NEGATE",
-            Mathtype::SQRT => "SQRT",
-            Mathtype::LOG => "LOG",
-            Mathtype::LN => "LN",
-            Mathtype::SIN => "SIN",
-            Mathtype::COS => "COS",
-            Mathtype::TAN => "TAN",
-            Mathtype::ASIN => "ASIN",
-            Mathtype::ACOS => "ACOS",
-            Mathtype::ATAN => "ATAN",
-            Mathtype::MOD8 => "MOD8",
-            Mathtype::MOD16 => "MOD16",
-            Mathtype::MOD32 => "MOD32",
-            Mathtype::POW => "POW",
-            Mathtype::TRUNC => "TRUNC",
+            MathSubcode::EXP => "EXP",
+            MathSubcode::MOD => "MOD",
+            MathSubcode::FLOOR => "FLOOR",
+            MathSubcode::CEIL => "CEIL",
+            MathSubcode::ROUND => "ROUND",
+            MathSubcode::ABS => "ABS",
+            MathSubcode::NEGATE => "NEGATE",
+            MathSubcode::SQRT => "SQRT",
+            MathSubcode::LOG => "LOG",
+            MathSubcode::LN => "LN",
+            MathSubcode::SIN => "SIN",
+            MathSubcode::COS => "COS",
+            MathSubcode::TAN => "TAN",
+            MathSubcode::ASIN => "ASIN",
+            MathSubcode::ACOS => "ACOS",
+            MathSubcode::ATAN => "ATAN",
+            MathSubcode::MOD8 => "MOD8",
+            MathSubcode::MOD16 => "MOD16",
+            MathSubcode::MOD32 => "MOD32",
+            MathSubcode::POW => "POW",
+            MathSubcode::TRUNC => "TRUNC",
         }
     }
 }
 #[allow(dead_code)]
 pub enum TstSubcode {
     #[allow(non_camel_case_types)]
-    TST_OPEN = 10,
+    OPEN = 10,
     #[allow(non_camel_case_types)]
-    TST_CLOSE = 11,
+    CLOSE = 11,
     #[allow(non_camel_case_types)]
-    TST_READ_PINS = 12,
+    READ_PINS = 12,
     #[allow(non_camel_case_types)]
-    TST_WRITE_PINS = 13,
+    WRITE_PINS = 13,
     #[allow(non_camel_case_types)]
-    TST_READ_ADC = 14,
+    READ_ADC = 14,
     #[allow(non_camel_case_types)]
-    TST_WRITE_UART = 15,
+    WRITE_UART = 15,
     #[allow(non_camel_case_types)]
-    TST_READ_UART = 16,
+    READ_UART = 16,
     #[allow(non_camel_case_types)]
-    TST_ENABLE_UART = 17,
+    ENABLE_UART = 17,
     #[allow(non_camel_case_types)]
-    TST_DISABLE_UART = 18,
+    DISABLE_UART = 18,
     #[allow(non_camel_case_types)]
-    TST_ACCU_SWITCH = 19,
+    ACCU_SWITCH = 19,
     #[allow(non_camel_case_types)]
-    TST_BOOT_MODE2 = 20,
+    BOOT_MODE2 = 20,
     #[allow(non_camel_case_types)]
-    TST_POLL_MODE2 = 21,
+    POLL_MODE2 = 21,
     #[allow(non_camel_case_types)]
-    TST_CLOSE_MODE2 = 22,
+    CLOSE_MODE2 = 22,
     #[allow(non_camel_case_types)]
-    TST_RAM_CHECK = 23,
+    RAM_CHECK = 23,
 }
 
 impl TstSubcode {
     #[allow(dead_code)]
     pub fn from_i32(i: i32) -> std::result::Result<TstSubcode, &'static str> {
         match i {
-            10 => Ok(TstSubcode::TST_OPEN),
-            11 => Ok(TstSubcode::TST_CLOSE),
-            12 => Ok(TstSubcode::TST_READ_PINS),
-            13 => Ok(TstSubcode::TST_WRITE_PINS),
-            14 => Ok(TstSubcode::TST_READ_ADC),
-            15 => Ok(TstSubcode::TST_WRITE_UART),
-            16 => Ok(TstSubcode::TST_READ_UART),
-            17 => Ok(TstSubcode::TST_ENABLE_UART),
-            18 => Ok(TstSubcode::TST_DISABLE_UART),
-            19 => Ok(TstSubcode::TST_ACCU_SWITCH),
-            20 => Ok(TstSubcode::TST_BOOT_MODE2),
-            21 => Ok(TstSubcode::TST_POLL_MODE2),
-            22 => Ok(TstSubcode::TST_CLOSE_MODE2),
-            23 => Ok(TstSubcode::TST_RAM_CHECK),
+            10 => Ok(TstSubcode::OPEN),
+            11 => Ok(TstSubcode::CLOSE),
+            12 => Ok(TstSubcode::READ_PINS),
+            13 => Ok(TstSubcode::WRITE_PINS),
+            14 => Ok(TstSubcode::READ_ADC),
+            15 => Ok(TstSubcode::WRITE_UART),
+            16 => Ok(TstSubcode::READ_UART),
+            17 => Ok(TstSubcode::ENABLE_UART),
+            18 => Ok(TstSubcode::DISABLE_UART),
+            19 => Ok(TstSubcode::ACCU_SWITCH),
+            20 => Ok(TstSubcode::BOOT_MODE2),
+            21 => Ok(TstSubcode::POLL_MODE2),
+            22 => Ok(TstSubcode::CLOSE_MODE2),
+            23 => Ok(TstSubcode::RAM_CHECK),
             _ => Err("Invalid enum value for TstSubcode")
         }
     }
@@ -2445,20 +2445,20 @@ impl TstSubcode {
     #[allow(dead_code)]
     pub fn to_str(&self) -> &'static str {
         match self {
-            TstSubcode::TST_OPEN => "TST_OPEN",
-            TstSubcode::TST_CLOSE => "TST_CLOSE",
-            TstSubcode::TST_READ_PINS => "TST_READ_PINS",
-            TstSubcode::TST_WRITE_PINS => "TST_WRITE_PINS",
-            TstSubcode::TST_READ_ADC => "TST_READ_ADC",
-            TstSubcode::TST_WRITE_UART => "TST_WRITE_UART",
-            TstSubcode::TST_READ_UART => "TST_READ_UART",
-            TstSubcode::TST_ENABLE_UART => "TST_ENABLE_UART",
-            TstSubcode::TST_DISABLE_UART => "TST_DISABLE_UART",
-            TstSubcode::TST_ACCU_SWITCH => "TST_ACCU_SWITCH",
-            TstSubcode::TST_BOOT_MODE2 => "TST_BOOT_MODE2",
-            TstSubcode::TST_POLL_MODE2 => "TST_POLL_MODE2",
-            TstSubcode::TST_CLOSE_MODE2 => "TST_CLOSE_MODE2",
-            TstSubcode::TST_RAM_CHECK => "TST_RAM_CHECK",
+            TstSubcode::OPEN => "OPEN",
+            TstSubcode::CLOSE => "CLOSE",
+            TstSubcode::READ_PINS => "READ_PINS",
+            TstSubcode::WRITE_PINS => "WRITE_PINS",
+            TstSubcode::READ_ADC => "READ_ADC",
+            TstSubcode::WRITE_UART => "WRITE_UART",
+            TstSubcode::READ_UART => "READ_UART",
+            TstSubcode::ENABLE_UART => "ENABLE_UART",
+            TstSubcode::DISABLE_UART => "DISABLE_UART",
+            TstSubcode::ACCU_SWITCH => "ACCU_SWITCH",
+            TstSubcode::BOOT_MODE2 => "BOOT_MODE2",
+            TstSubcode::POLL_MODE2 => "POLL_MODE2",
+            TstSubcode::CLOSE_MODE2 => "CLOSE_MODE2",
+            TstSubcode::RAM_CHECK => "RAM_CHECK",
         }
     }
 }

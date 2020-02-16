@@ -22,6 +22,10 @@ RENAMES = {
     'MOVEF_16'      : 'MoveF_16',
     'MOVEF_32'      : 'MoveF_32',
     'MOVEF_F'       : 'MoveF_F',
+    'MATHTYPE'      : 'MathSubcode',
+    'STRINGS'       : 'String',
+    'INPUT_READSI'  : 'InputReadSi',
+    'INPUT_READEXT' : 'InputReadExt',
 }
 
 def to_camel_case(s):
@@ -35,6 +39,9 @@ def to_camel_case(s):
     return ''.join(words)
 
 def sanitize_name(name, camel_case):
+    if name != 'TST_SUBCODE' and name.startswith('TST_'):
+        name = name[4:]
+
     if name in RENAMES:
         return RENAMES[name]
     elif camel_case:
