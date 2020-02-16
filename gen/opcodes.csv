@@ -1,467 +1,467 @@
 opcode         , subcode           , value, proto
-Error          ,                   , 0x00 ,
-Nop            ,                   , 0x01 ,
-ProgramStop    ,                   , 0x02 ,
-ProgramStart   ,                   , 0x03 ,
-ObjectStop     ,                   , 0x04 ,
-ObjectStart    ,                   , 0x05 ,
-ObjectTrig     ,                   , 0x06 ,
-ObjectWait     ,                   , 0x07 ,
-Return         ,                   , 0x08 ,
-Call           ,                   , 0x09 ,
-ObjectEnd      ,                   , 0x0A ,
-Sleep          ,                   , 0x0B ,
+Error          ,                   , 0x00 , .
+Nop            ,                   , 0x01 , .
+ProgramStop    ,                   , 0x02 , w.
+ProgramStart   ,                   , 0x03 , wddb.
+ObjectStop     ,                   , 0x04 , w.
+ObjectStart    ,                   , 0x05 , w.
+ObjectTrig     ,                   , 0x06 , w.
+ObjectWait     ,                   , 0x07 , w.
+Return         ,                   , 0x08 , .
+Call           ,                   , 0x09 , wb?
+ObjectEnd      ,                   , 0x0A , .
+Sleep          ,                   , 0x0B , .
 ProgramInfo    ,                   , 0x0C ,
-ProgramInfo    , OBJ_STOP          , 0    ,
-ProgramInfo    , OBJ_START         , 4    ,
-ProgramInfo    , GET_STATUS        , 22   ,
-ProgramInfo    , GET_SPEED         , 23   ,
-ProgramInfo    , GET_PRGRESULT     , 24   ,
+ProgramInfo    , OBJ_STOP          , 0    , ww.
+ProgramInfo    , OBJ_START         , 4    , ww.
+ProgramInfo    , GET_STATUS        , 22   , w.b
+ProgramInfo    , GET_SPEED         , 23   , w.d
+ProgramInfo    , GET_PRGRESULT     , 24   , w.b
 ProgramInfo    , SET_INSTR         , 25   ,
-Label          ,                   , 0x0D ,
-Probe          ,                   , 0x0E ,
-Do             ,                   , 0x0F ,
-Add8           ,                   , 0x10 ,
-Add16          ,                   , 0x11 ,
-Add32          ,                   , 0x12 ,
-AddF           ,                   , 0x13 ,
-Sub8           ,                   , 0x14 ,
-Sub16          ,                   , 0x15 ,
-Sub32          ,                   , 0x16 ,
-SubF           ,                   , 0x17 ,
-Mul8           ,                   , 0x18 ,
-Mul16          ,                   , 0x19 ,
-Mul32          ,                   , 0x1A ,
-MulF           ,                   , 0x1B ,
-Div8           ,                   , 0x1C ,
-Div16          ,                   , 0x1D ,
-Div32          ,                   , 0x1E ,
-DivF           ,                   , 0x1F ,
-Or8            ,                   , 0x20 ,
-Or16           ,                   , 0x21 ,
-Or32           ,                   , 0x22 ,
-And8           ,                   , 0x24 ,
-And16          ,                   , 0x25 ,
-And32          ,                   , 0x26 ,
-Xor8           ,                   , 0x28 ,
-Xor16          ,                   , 0x29 ,
-Xor32          ,                   , 0x2A ,
-Rl8            ,                   , 0x2C ,
-Rl16           ,                   , 0x2D ,
-Rl32           ,                   , 0x2E ,
-InitBytes      ,                   , 0x2F ,
-Move8_8        ,                   , 0x30 ,
-Move8_16       ,                   , 0x31 ,
-Move8_32       ,                   , 0x32 ,
-Move8_F        ,                   , 0x33 ,
-Move16_8       ,                   , 0x34 ,
-Move16_16      ,                   , 0x35 ,
-Move16_32      ,                   , 0x36 ,
-Move16_F       ,                   , 0x37 ,
-Move32_8       ,                   , 0x38 ,
-Move32_16      ,                   , 0x39 ,
-Move32_32      ,                   , 0x3A ,
-Move32_F       ,                   , 0x3B ,
-MoveF_8        ,                   , 0x3C ,
-MoveF_16       ,                   , 0x3D ,
-MoveF_32       ,                   , 0x3E ,
-MoveF_F        ,                   , 0x3F ,
-Jr             ,                   , 0x40 ,
-JrFalse        ,                   , 0x41 ,
-JrTrue         ,                   , 0x42 ,
-JrNan          ,                   , 0x43 ,
-CpLt8          ,                   , 0x44 ,
-CpLt16         ,                   , 0x45 ,
-CpLt32         ,                   , 0x46 ,
-CpLtf          ,                   , 0x47 ,
-CpGt8          ,                   , 0x48 ,
-CpGt16         ,                   , 0x49 ,
-CpGt32         ,                   , 0x4A ,
-CpGtf          ,                   , 0x4B ,
-CpEq8          ,                   , 0x4C ,
-CpEq16         ,                   , 0x4D ,
-CpEq32         ,                   , 0x4E ,
-CpEqf          ,                   , 0x4F ,
-CpNeq8         ,                   , 0x50 ,
-CpNeq16        ,                   , 0x51 ,
-CpNeq32        ,                   , 0x52 ,
-CpNeqf         ,                   , 0x53 ,
-CpLteq8        ,                   , 0x54 ,
-CpLteq16       ,                   , 0x55 ,
-CpLteq32       ,                   , 0x56 ,
-CpLteqf        ,                   , 0x57 ,
-CpGteq8        ,                   , 0x58 ,
-CpGteq16       ,                   , 0x59 ,
-CpGteq32       ,                   , 0x5A ,
-CpGteqf        ,                   , 0x5B ,
-Select8        ,                   , 0x5C ,
-Select16       ,                   , 0x5D ,
-Select32       ,                   , 0x5E ,
-Selectf        ,                   , 0x5F ,
-System         ,                   , 0x60 ,
-PortCnvOutput  ,                   , 0x61 ,
-PortCnvInput   ,                   , 0x62 ,
-NoteToFreq     ,                   , 0x63 ,
-JrLt8          ,                   , 0x64 ,
-JrLt16         ,                   , 0x65 ,
-JrLt32         ,                   , 0x66 ,
-JrLtf          ,                   , 0x67 ,
-JrGt8          ,                   , 0x68 ,
-JrGt16         ,                   , 0x69 ,
-JrGt32         ,                   , 0x6A ,
-JrGtf          ,                   , 0x6B ,
-JrEq8          ,                   , 0x6C ,
-JrEq16         ,                   , 0x6D ,
-JrEq32         ,                   , 0x6E ,
-JrEqf          ,                   , 0x6F ,
-JrNeq8         ,                   , 0x70 ,
-JrNeq16        ,                   , 0x71 ,
-JrNeq32        ,                   , 0x72 ,
-JrNeqf         ,                   , 0x73 ,
-JrLteq8        ,                   , 0x74 ,
-JrLteq16       ,                   , 0x75 ,
-JrLteq32       ,                   , 0x76 ,
-JrLteqf        ,                   , 0x77 ,
-JrGteq8        ,                   , 0x78 ,
-JrGteq16       ,                   , 0x79 ,
-JrGteq32       ,                   , 0x7A ,
-JrGteqf        ,                   , 0x7B ,
+Label          ,                   , 0x0D , u.
+Probe          ,                   , 0x0E , wwdd.
+Do             ,                   , 0x0F , wdd.
+Add8           ,                   , 0x10 , bb.b
+Add16          ,                   , 0x11 , ww.w
+Add32          ,                   , 0x12 , dd.d
+AddF           ,                   , 0x13 , ff.f
+Sub8           ,                   , 0x14 , bb.b
+Sub16          ,                   , 0x15 , ww.w
+Sub32          ,                   , 0x16 , dd.d
+SubF           ,                   , 0x17 , ff.f
+Mul8           ,                   , 0x18 , bb.b
+Mul16          ,                   , 0x19 , ww.w
+Mul32          ,                   , 0x1A , dd.d
+MulF           ,                   , 0x1B , ff.f
+Div8           ,                   , 0x1C , bb.b
+Div16          ,                   , 0x1D , ww.w
+Div32          ,                   , 0x1E , dd.d
+DivF           ,                   , 0x1F , ff.f
+Or8            ,                   , 0x20 , bb.b
+Or16           ,                   , 0x21 , ww.w
+Or32           ,                   , 0x22 , dd.d
+And8           ,                   , 0x24 , bb.b
+And16          ,                   , 0x25 , ww.w
+And32          ,                   , 0x26 , dd.d
+Xor8           ,                   , 0x28 , bb.b
+Xor16          ,                   , 0x29 , ww.w
+Xor32          ,                   , 0x2A , dd.d
+Rl8            ,                   , 0x2C , bb.b
+Rl16           ,                   , 0x2D , ww.w
+Rl32           ,                   , 0x2E , dd.d
+InitBytes      ,                   , 0x2F , db+.b+
+Move8_8        ,                   , 0x30 , b.b
+Move8_16       ,                   , 0x31 , b.w
+Move8_32       ,                   , 0x32 , b.d
+Move8_F        ,                   , 0x33 , b.f
+Move16_8       ,                   , 0x34 , w.b
+Move16_16      ,                   , 0x35 , w.w
+Move16_32      ,                   , 0x36 , w.d
+Move16_F       ,                   , 0x37 , w.f
+Move32_8       ,                   , 0x38 , d.b
+Move32_16      ,                   , 0x39 , d.w
+Move32_32      ,                   , 0x3A , d.d
+Move32_F       ,                   , 0x3B , d.f
+MoveF_8        ,                   , 0x3C , f.b
+MoveF_16       ,                   , 0x3D , f.w
+MoveF_32       ,                   , 0x3E , f.d
+MoveF_F        ,                   , 0x3F , f.f
+Jr             ,                   , 0x40 , o.
+JrFalse        ,                   , 0x41 , bo.
+JrTrue         ,                   , 0x42 , bo.
+JrNan          ,                   , 0x43 , fo.
+CpLt8          ,                   , 0x44 , bb.b
+CpLt16         ,                   , 0x45 , ww.b
+CpLt32         ,                   , 0x46 , dd.b
+CpLtf          ,                   , 0x47 , ff.b
+CpGt8          ,                   , 0x48 , bb.b
+CpGt16         ,                   , 0x49 , ww.b
+CpGt32         ,                   , 0x4A , dd.b
+CpGtf          ,                   , 0x4B , ff.b
+CpEq8          ,                   , 0x4C , bb.b
+CpEq16         ,                   , 0x4D , ww.b
+CpEq32         ,                   , 0x4E , dd.b
+CpEqf          ,                   , 0x4F , ff.b
+CpNeq8         ,                   , 0x50 , bb.b
+CpNeq16        ,                   , 0x51 , ww.b
+CpNeq32        ,                   , 0x52 , dd.b
+CpNeqf         ,                   , 0x53 , ff.b
+CpLteq8        ,                   , 0x54 , bb.b
+CpLteq16       ,                   , 0x55 , ww.b
+CpLteq32       ,                   , 0x56 , dd.b
+CpLteqf        ,                   , 0x57 , ff.b
+CpGteq8        ,                   , 0x58 , bb.b
+CpGteq16       ,                   , 0x59 , ww.b
+CpGteq32       ,                   , 0x5A , dd.b
+CpGteqf        ,                   , 0x5B , ff.b
+Select8        ,                   , 0x5C , bbb.b
+Select16       ,                   , 0x5D , bww.w
+Select32       ,                   , 0x5E , bdd.d
+Selectf        ,                   , 0x5F , bff.f
+System         ,                   , 0x60 , b.d
+PortCnvOutput  ,                   , 0x61 , dbbb.
+PortCnvInput   ,                   , 0x62 , dbb.
+NoteToFreq     ,                   , 0x63 , b.w
+JrLt8          ,                   , 0x64 , bbo.
+JrLt16         ,                   , 0x65 , wwo.
+JrLt32         ,                   , 0x66 , ddo.
+JrLtf          ,                   , 0x67 , ffo.
+JrGt8          ,                   , 0x68 , bbo.
+JrGt16         ,                   , 0x69 , wwo.
+JrGt32         ,                   , 0x6A , ddo.
+JrGtf          ,                   , 0x6B , ffo.
+JrEq8          ,                   , 0x6C , bbo.
+JrEq16         ,                   , 0x6D , wwo.
+JrEq32         ,                   , 0x6E , ddo.
+JrEqf          ,                   , 0x6F , ffo.
+JrNeq8         ,                   , 0x70 , bbo.
+JrNeq16        ,                   , 0x71 , wwo.
+JrNeq32        ,                   , 0x72 , ddo.
+JrNeqf         ,                   , 0x73 , ffo.
+JrLteq8        ,                   , 0x74 , bbo.
+JrLteq16       ,                   , 0x75 , wwo.
+JrLteq32       ,                   , 0x76 , ddo.
+JrLteqf        ,                   , 0x77 , ffo.
+JrGteq8        ,                   , 0x78 , bbo.
+JrGteq16       ,                   , 0x79 , wwo.
+JrGteq32       ,                   , 0x7A , ddo.
+JrGteqf        ,                   , 0x7B , ffo.
 Info           ,                   , 0x7C ,
-Info           , SET_ERROR         , 1    ,
-Info           , GET_ERROR         , 2    ,
-Info           , ERRORTEXT         , 3    ,
-Info           , GET_VOLUME        , 4    ,
-Info           , SET_VOLUME        , 5    ,
-Info           , GET_MINUTES       , 6    ,
-Info           , SET_MINUTES       , 7    ,
+Info           , SET_ERROR         , 1    , b.
+Info           , GET_ERROR         , 2    , b.
+Info           , ERRORTEXT         , 3    , bb.b
+Info           , GET_VOLUME        , 4    , .b
+Info           , SET_VOLUME        , 5    , b.
+Info           , GET_MINUTES       , 6    , .b
+Info           , SET_MINUTES       , 7    , b.
 String         ,                   , 0x7D ,
-String         , GET_SIZE          , 1    ,
-String         , ADD               , 2    ,
-String         , COMPARE           , 3    ,
-String         , DUPLICATE         , 5    ,
-String         , VALUE_TO_STRING   , 6    ,
-String         , STRING_TO_VALUE   , 7    ,
-String         , STRIP             , 8    ,
-String         , NUMBER_TO_STRING  , 9    ,
-String         , SUB               , 10   ,
-String         , VALUE_FORMATTED   , 11   ,
-String         , NUMBER_FORMATTED  , 12   ,
-MemoryWrite    ,                   , 0x7E ,
-MemoryRead     ,                   , 0x7F ,
-UiFlush        ,                   , 0x80 ,
+String         , GET_SIZE          , 1    , s.w
+String         , ADD               , 2    , ss.s
+String         , COMPARE           , 3    , ss.b
+String         , DUPLICATE         , 5    , s.s
+String         , VALUE_TO_STRING   , 6    , fbb.s
+String         , STRING_TO_VALUE   , 7    , s.f
+String         , STRIP             , 8    , s.s
+String         , NUMBER_TO_STRING  , 9    , wb.s
+String         , SUB               , 10   , ss.s
+String         , VALUE_FORMATTED   , 11   , fbb.s
+String         , NUMBER_FORMATTED  , 12   , dbb.s
+MemoryWrite    ,                   , 0x7E , wwddb+.
+MemoryRead     ,                   , 0x7F , wwdd.b+
+UiFlush        ,                   , 0x80 , .
 UiRead         ,                   , 0x81 ,
-UiRead         , GET_VBATT         , 1    ,
-UiRead         , GET_IBATT         , 2    ,
-UiRead         , GET_OS_VERS       , 3    ,
-UiRead         , GET_EVENT         , 4    ,
-UiRead         , GET_TBATT         , 5    ,
+UiRead         , GET_VBATT         , 1    , .f
+UiRead         , GET_IBATT         , 2    , .f
+UiRead         , GET_OS_VERS       , 3    , u.b+
+UiRead         , GET_EVENT         , 4    , .b
+UiRead         , GET_TBATT         , 5    , .f
 UiRead         , GET_IINT          , 6    ,
-UiRead         , GET_IMOTOR        , 7    ,
-UiRead         , GET_STRING        , 8    ,
-UiRead         , GET_HW_VERS       , 9    ,
-UiRead         , GET_FW_VERS       , 10   ,
-UiRead         , GET_FW_BUILD      , 11   ,
-UiRead         , GET_OS_BUILD      , 12   ,
-UiRead         , GET_ADDRESS       , 13   ,
-UiRead         , GET_CODE          , 14   ,
-UiRead         , KEY               , 15   ,
-UiRead         , GET_SHUTDOWN      , 16   ,
-UiRead         , GET_WARNING       , 17   ,
-UiRead         , GET_LBATT         , 18   ,
-UiRead         , TEXTBOX_READ      , 21   ,
-UiRead         , GET_VERSION       , 26   ,
-UiRead         , GET_IP            , 27   ,
+UiRead         , GET_IMOTOR        , 7    , .f
+UiRead         , GET_STRING        , 8    , b.b+
+UiRead         , GET_HW_VERS       , 9    , d.b+
+UiRead         , GET_FW_VERS       , 10   , d.b+
+UiRead         , GET_FW_BUILD      , 11   , d.b+
+UiRead         , GET_OS_BUILD      , 12   , d.b+
+UiRead         , GET_ADDRESS       , 13   , d.
+UiRead         , GET_CODE          , 14   , d.ddb
+UiRead         , KEY               , 15   , b.
+UiRead         , GET_SHUTDOWN      , 16   , .b
+UiRead         , GET_WARNING       , 17   , .b
+UiRead         , GET_LBATT         , 18   , .b
+UiRead         , TEXTBOX_READ      , 21   , sdbbw.b+
+UiRead         , GET_VERSION       , 26   , d.b+
+UiRead         , GET_IP            , 27   , d.b+
 UiRead         , GET_POWER         , 29   ,
-UiRead         , GET_SDCARD        , 30   ,
-UiRead         , GET_USBSTICK      , 31   ,
+UiRead         , GET_SDCARD        , 30   , .bdd
+UiRead         , GET_USBSTICK      , 31   , .bdd
 UiWrite        ,                   , 0x82 ,
-UiWrite        , WRITE_FLUSH       , 1    ,
-UiWrite        , FLOATVALUE        , 2    ,
+UiWrite        , WRITE_FLUSH       , 1    , .
+UiWrite        , FLOATVALUE        , 2    , fbb.s
 UiWrite        , STAMP             , 3    ,
-UiWrite        , PUT_STRING        , 8    ,
-UiWrite        , VALUE8            , 9    ,
-UiWrite        , VALUE16           , 10   ,
-UiWrite        , VALUE32           , 11   ,
-UiWrite        , VALUEF            , 12   ,
+UiWrite        , PUT_STRING        , 8    , s.
+UiWrite        , VALUE8            , 9    , b.
+UiWrite        , VALUE16           , 10   , w.
+UiWrite        , VALUE32           , 11   , d.
+UiWrite        , VALUEF            , 12   , f.
 UiWrite        , ADDRESS           , 13   ,
 UiWrite        , CODE              , 14   ,
-UiWrite        , DOWNLOAD_END      , 15   ,
-UiWrite        , SCREEN_BLOCK      , 16   ,
+UiWrite        , DOWNLOAD_END      , 15   , .
+UiWrite        , SCREEN_BLOCK      , 16   , b.
 UiWrite        , ALLOW_PULSE       , 17   ,
 UiWrite        , SET_PULSE         , 18   ,
-UiWrite        , TEXTBOX_APPEND    , 21   ,
-UiWrite        , SET_BUSY          , 22   ,
-UiWrite        , SET_TESTPIN       , 24   ,
-UiWrite        , INIT_RUN          , 25   ,
+UiWrite        , TEXTBOX_APPEND    , 21   , sdbb.
+UiWrite        , SET_BUSY          , 22   , b.
+UiWrite        , SET_TESTPIN       , 24   , b.
+UiWrite        , INIT_RUN          , 25   , .
 UiWrite        , UPDATE_RUN        , 26   ,
-UiWrite        , LED               , 27   ,
-UiWrite        , POWER             , 29   ,
-UiWrite        , GRAPH_SAMPLE      , 30   ,
-UiWrite        , TERMINAL          , 31   ,
+UiWrite        , LED               , 27   , b.
+UiWrite        , POWER             , 29   , b.
+UiWrite        , GRAPH_SAMPLE      , 30   , .
+UiWrite        , TERMINAL          , 31   , b.
 UiButton       ,                   , 0x83 ,
-UiButton       , SHORTPRESS        , 1    ,
-UiButton       , LONGPRESS         , 2    ,
-UiButton       , WAIT_FOR_PRESS    , 3    ,
-UiButton       , FLUSH             , 4    ,
-UiButton       , PRESS             , 5    ,
-UiButton       , RELEASE           , 6    ,
-UiButton       , GET_HORZ          , 7    ,
-UiButton       , GET_VERT          , 8    ,
-UiButton       , PRESSED           , 9    ,
-UiButton       , SET_BACK_BLOCK    , 10   ,
-UiButton       , GET_BACK_BLOCK    , 11   ,
-UiButton       , TESTSHORTPRESS    , 12   ,
-UiButton       , TESTLONGPRESS     , 13   ,
-UiButton       , GET_BUMBED        , 14   ,
-UiButton       , GET_CLICK         , 15   ,
+UiButton       , SHORTPRESS        , 1    , b.b
+UiButton       , LONGPRESS         , 2    , b.b
+UiButton       , WAIT_FOR_PRESS    , 3    , .
+UiButton       , FLUSH             , 4    , .
+UiButton       , PRESS             , 5    , b.
+UiButton       , RELEASE           , 6    , b.
+UiButton       , GET_HORZ          , 7    , .w
+UiButton       , GET_VERT          , 8    , .w
+UiButton       , PRESSED           , 9    , b.b
+UiButton       , SET_BACK_BLOCK    , 10   , b.
+UiButton       , GET_BACK_BLOCK    , 11   , .b
+UiButton       , TESTSHORTPRESS    , 12   , b.b
+UiButton       , TESTLONGPRESS     , 13   , b.b
+UiButton       , GET_BUMBED        , 14   , b.b
+UiButton       , GET_CLICK         , 15   , .b
 UiDraw         ,                   , 0x84 ,
-UiDraw         , UPDATE            , 0    ,
+UiDraw         , UPDATE            , 0    , .
 UiDraw         , CLEAN             , 1    ,
-UiDraw         , PIXEL             , 2    ,
-UiDraw         , LINE              , 3    ,
-UiDraw         , CIRCLE            , 4    ,
-UiDraw         , TEXT              , 5    ,
-UiDraw         , ICON              , 6    ,
-UiDraw         , PICTURE           , 7    ,
-UiDraw         , VALUE             , 8    ,
-UiDraw         , FILLRECT          , 9    ,
-UiDraw         , RECT              , 10   ,
-UiDraw         , NOTIFICATION      , 11   ,
-UiDraw         , QUESTION          , 12   ,
-UiDraw         , KEYBOARD          , 13   ,
-UiDraw         , BROWSE            , 14   ,
-UiDraw         , VERTBAR           , 15   ,
-UiDraw         , INVERSERECT       , 16   ,
-UiDraw         , SELECT_FONT       , 17   ,
-UiDraw         , TOPLINE           , 18   ,
-UiDraw         , FILLWINDOW        , 19   ,
+UiDraw         , PIXEL             , 2    , bww.
+UiDraw         , LINE              , 3    , bwwww.
+UiDraw         , CIRCLE            , 4    , bwww.
+UiDraw         , TEXT              , 5    , bwws.
+UiDraw         , ICON              , 6    , bwwbd.
+UiDraw         , PICTURE           , 7    , bwwd.
+UiDraw         , VALUE             , 8    , bwwfbb.
+UiDraw         , FILLRECT          , 9    , bwwww.
+UiDraw         , RECT              , 10   , bwwww.
+UiDraw         , NOTIFICATION      , 11   , bwwbbbsb.
+UiDraw         , QUESTION          , 12   , bwwbbsb.b
+UiDraw         , KEYBOARD          , 13   , bwwbbb.b+
+UiDraw         , BROWSE            , 14   , bwwwwb.bb+
+UiDraw         , VERTBAR           , 15   , bwwwwwww.
+UiDraw         , INVERSERECT       , 16   , wwww.
+UiDraw         , SELECT_FONT       , 17   , b.
+UiDraw         , TOPLINE           , 18   , b.
+UiDraw         , FILLWINDOW        , 19   , bww.
 UiDraw         , SCROLL            , 20   ,
-UiDraw         , DOTLINE           , 21   ,
-UiDraw         , VIEW_VALUE        , 22   ,
-UiDraw         , VIEW_UNIT         , 23   ,
-UiDraw         , FILLCIRCLE        , 24   ,
-UiDraw         , STORE             , 25   ,
-UiDraw         , RESTORE           , 26   ,
-UiDraw         , ICON_QUESTION     , 27   ,
-UiDraw         , BMPFILE           , 28   ,
+UiDraw         , DOTLINE           , 21   , bwwwwww.
+UiDraw         , VIEW_VALUE        , 22   , bwwfbb.
+UiDraw         , VIEW_UNIT         , 23   , bwwfbbbb.
+UiDraw         , FILLCIRCLE        , 24   , bwww.
+UiDraw         , STORE             , 25   , b.
+UiDraw         , RESTORE           , 26   , b.
+UiDraw         , ICON_QUESTION     , 27   , bwwbd.
+UiDraw         , BMPFILE           , 28   , bwws.
 UiDraw         , POPUP             , 29   ,
-UiDraw         , GRAPH_SETUP       , 30   ,
-UiDraw         , GRAPH_DRAW        , 31   ,
-UiDraw         , TEXTBOX           , 32   ,
+UiDraw         , GRAPH_SETUP       , 30   , wwbwwfff.
+UiDraw         , GRAPH_DRAW        , 31   , b.
+UiDraw         , TEXTBOX           , 32   , wwwwsdb.w
 TimerWait      ,                   , 0x85 ,
 TimerReady     ,                   , 0x86 ,
 TimerRead      ,                   , 0x87 ,
-Bp0            ,                   , 0x88 ,
-Bp1            ,                   , 0x89 ,
-Bp2            ,                   , 0x8A ,
-Bp3            ,                   , 0x8B ,
-BpSet          ,                   , 0x8C ,
+Bp0            ,                   , 0x88 , .
+Bp1            ,                   , 0x89 , .
+Bp2            ,                   , 0x8A , .
+Bp3            ,                   , 0x8B , .
+BpSet          ,                   , 0x8C , wbd.
 Math           ,                   , 0x8D ,
-Math           , EXP               , 1    ,
-Math           , MOD               , 2    ,
-Math           , FLOOR             , 3    ,
-Math           , CEIL              , 4    ,
-Math           , ROUND             , 5    ,
-Math           , ABS               , 6    ,
-Math           , NEGATE            , 7    ,
-Math           , SQRT              , 8    ,
-Math           , LOG               , 9    ,
-Math           , LN                , 10   ,
-Math           , SIN               , 11   ,
-Math           , COS               , 12   ,
-Math           , TAN               , 13   ,
-Math           , ASIN              , 14   ,
-Math           , ACOS              , 15   ,
-Math           , ATAN              , 16   ,
-Math           , MOD8              , 17   ,
-Math           , MOD16             , 18   ,
-Math           , MOD32             , 19   ,
-Math           , POW               , 20   ,
-Math           , TRUNC             , 21   ,
-Random         ,                   , 0x8E ,
+Math           , EXP               , 1    , f.f
+Math           , MOD               , 2    , ff.f
+Math           , FLOOR             , 3    , f.f
+Math           , CEIL              , 4    , f.f
+Math           , ROUND             , 5    , f.f
+Math           , ABS               , 6    , f.f
+Math           , NEGATE            , 7    , f.f
+Math           , SQRT              , 8    , f.f
+Math           , LOG               , 9    , f.f
+Math           , LN                , 10   , f.f
+Math           , SIN               , 11   , f.f
+Math           , COS               , 12   , f.f
+Math           , TAN               , 13   , f.f
+Math           , ASIN              , 14   , f.f
+Math           , ACOS              , 15   , f.f
+Math           , ATAN              , 16   , f.f
+Math           , MOD8              , 17   , bb.b
+Math           , MOD16             , 18   , ww.w
+Math           , MOD32             , 19   , dd.d
+Math           , POW               , 20   , ff.f
+Math           , TRUNC             , 21   , fb.f
+Random         ,                   , 0x8E , ww.w
 TimerReadUs    ,                   , 0x8F ,
-KeepAlive      ,                   , 0x90 ,
+KeepAlive      ,                   , 0x90 , b.
 ComRead        ,                   , 0x91 ,
-ComRead        , COMMAND           , 14   ,
+ComRead        , COMMAND           , 14   , d.ddb
 ComWrite       ,                   , 0x92 ,
-ComWrite       , REPLY             , 14   ,
+ComWrite       , REPLY             , 14   , .dd
 Sound          ,                   , 0x94 ,
-Sound          , BREAK             , 0    ,
-Sound          , TONE              , 1    ,
-Sound          , PLAY              , 2    ,
-Sound          , REPEAT            , 3    ,
+Sound          , BREAK             , 0    , .
+Sound          , TONE              , 1    , bww.
+Sound          , PLAY              , 2    , bs.
+Sound          , REPEAT            , 3    , bs.
 Sound          , SERVICE           , 4    ,
-SoundTest      ,                   , 0x95 ,
-SoundReady     ,                   , 0x96 ,
+SoundTest      ,                   , 0x95 , .b
+SoundReady     ,                   , 0x96 , .
 InputSample    ,                   , 0x97 ,
-InputDeviceList,                   , 0x98 ,
+InputDeviceList,                   , 0x98 , bb+b.
 InputDevice    ,                   , 0x99 ,
 InputDevice    , INSERT_TYPE       , 1    ,
-InputDevice    , GET_FORMAT        , 2    ,
-InputDevice    , CAL_MINMAX        , 3    ,
-InputDevice    , CAL_DEFAULT       , 4    ,
-InputDevice    , GET_TYPEMODE      , 5    ,
-InputDevice    , GET_SYMBOL        , 6    ,
-InputDevice    , CAL_MIN           , 7    ,
-InputDevice    , CAL_MAX           , 8    ,
-InputDevice    , SETUP             , 9    ,
-InputDevice    , CLR_ALL           , 10   ,
-InputDevice    , GET_RAW           , 11   ,
-InputDevice    , GET_CONNECTION    , 12   ,
-InputDevice    , STOP_ALL          , 13   ,
+InputDevice    , GET_FORMAT        , 2    , bb.bbbb
+InputDevice    , CAL_MINMAX        , 3    , bbdd.
+InputDevice    , CAL_DEFAULT       , 4    , bb.
+InputDevice    , GET_TYPEMODE      , 5    , bb.bb
+InputDevice    , GET_SYMBOL        , 6    , bbb.b
+InputDevice    , CAL_MIN           , 7    , bbd.
+InputDevice    , CAL_MAX           , 8    , bbd.
+InputDevice    , SETUP             , 9    , bbbwbb.a
+InputDevice    , CLR_ALL           , 10   , b.
+InputDevice    , GET_RAW           , 11   , bb.d
+InputDevice    , GET_CONNECTION    , 12   , bb.b
+InputDevice    , STOP_ALL          , 13   , b.
 InputDevice    , SET_TYPEMODE      , 14   ,
 InputDevice    , READY_IIC         , 15   ,
-InputDevice    , GET_NAME          , 21   ,
-InputDevice    , GET_MODENAME      , 22   ,
+InputDevice    , GET_NAME          , 21   , bbb.s
+InputDevice    , GET_MODENAME      , 22   , bbbb.s
 InputDevice    , SET_RAW           , 23   ,
-InputDevice    , GET_FIGURES       , 24   ,
-InputDevice    , GET_CHANGES       , 25   ,
-InputDevice    , CLR_CHANGES       , 26   ,
-InputDevice    , READY_PCT         , 27   ,
-InputDevice    , READY_RAW         , 28   ,
-InputDevice    , READY_SI          , 29   ,
-InputDevice    , GET_MINMAX        , 30   ,
-InputDevice    , GET_BUMPS         , 31   ,
-InputRead      ,                   , 0x9A ,
-InputTest      ,                   , 0x9B ,
-InputReady     ,                   , 0x9C ,
-InputReadSi    ,                   , 0x9D ,
-InputReadExt   ,                   , 0x9E ,
-InputWrite     ,                   , 0x9F ,
+InputDevice    , GET_FIGURES       , 24   , bb.bb
+InputDevice    , GET_CHANGES       , 25   , bb.b
+InputDevice    , CLR_CHANGES       , 26   , bb.
+InputDevice    , READY_PCT         , 27   , bbbbb.b+
+InputDevice    , READY_RAW         , 28   , bbbbb.d+
+InputDevice    , READY_SI          , 29   , bbbbb.f+
+InputDevice    , GET_MINMAX        , 30   , bb.ff
+InputDevice    , GET_BUMPS         , 31   , bb.f
+InputRead      ,                   , 0x9A , bbbb.b
+InputTest      ,                   , 0x9B , bb.b
+InputReady     ,                   , 0x9C , bb.
+InputReadSi    ,                   , 0x9D , bbbb.f
+InputReadExt   ,                   , 0x9E , bbbbbb.d+
+InputWrite     ,                   , 0x9F , bbbb+.
 OutputGetType  ,                   , 0xA0 ,
-OutputSetType  ,                   , 0xA1 ,
-OutputReset    ,                   , 0xA2 ,
-OutputStop     ,                   , 0xA3 ,
-OutputPower    ,                   , 0xA4 ,
-OutputSpeed    ,                   , 0xA5 ,
-OutputStart    ,                   , 0xA6 ,
-OutputPolarity ,                   , 0xA7 ,
-OutputRead     ,                   , 0xA8 ,
-OutputTest     ,                   , 0xA9 ,
-OutputReady    ,                   , 0xAA ,
+OutputSetType  ,                   , 0xA1 , bbb.
+OutputReset    ,                   , 0xA2 , bb.
+OutputStop     ,                   , 0xA3 , bbb.
+OutputPower    ,                   , 0xA4 , bbb.
+OutputSpeed    ,                   , 0xA5 , bbb.
+OutputStart    ,                   , 0xA6 , bb.
+OutputPolarity ,                   , 0xA7 , bbb.
+OutputRead     ,                   , 0xA8 , bbbd.
+OutputTest     ,                   , 0xA9 , bb.b
+OutputReady    ,                   , 0xAA , bb.
 OutputPosition ,                   , 0xAB ,
-OutputStepPower,                   , 0xAC ,
-OutputTimePower,                   , 0xAD ,
-OutputStepSpeed,                   , 0xAE ,
-OutputTimeSpeed,                   , 0xAF ,
-OutputStepSync ,                   , 0xB0 ,
-OutputTimeSync ,                   , 0xB1 ,
-OutputClrCount ,                   , 0xB2 ,
-OutputGetCount ,                   , 0xB3 ,
-OutputPrgStop  ,                   , 0xB4 ,
+OutputStepPower,                   , 0xAC , bbbdddb.
+OutputTimePower,                   , 0xAD , bbbdddb.
+OutputStepSpeed,                   , 0xAE , bbbdddb.
+OutputTimeSpeed,                   , 0xAF , bbbdddb.
+OutputStepSync ,                   , 0xB0 , bbbwdb.
+OutputTimeSync ,                   , 0xB1 , bbbwdb.
+OutputClrCount ,                   , 0xB2 , bb.
+OutputGetCount ,                   , 0xB3 , bbd.
+OutputPrgStop  ,                   , 0xB4 , .
 File           ,                   , 0xC0 ,
-File           , OPEN_APPEND       , 0    ,
-File           , OPEN_READ         , 1    ,
-File           , OPEN_WRITE        , 2    ,
-File           , READ_VALUE        , 3    ,
-File           , WRITE_VALUE       , 4    ,
-File           , READ_TEXT         , 5    ,
-File           , WRITE_TEXT        , 6    ,
-File           , CLOSE             , 7    ,
-File           , LOAD_IMAGE        , 8    ,
-File           , GET_HANDLE        , 9    ,
-File           , MAKE_FOLDER       , 10   ,
-File           , GET_POOL          , 11   ,
-File           , SET_LOG_SYNC_TIME , 12   ,
-File           , GET_FOLDERS       , 13   ,
-File           , GET_LOG_SYNC_TIME , 14   ,
-File           , GET_SUBFOLDER_NAME, 15   ,
-File           , WRITE_LOG         , 16   ,
-File           , CLOSE_LOG         , 17   ,
-File           , GET_IMAGE         , 18   ,
-File           , GET_ITEM          , 19   ,
-File           , GET_CACHE_FILES   , 20   ,
-File           , PUT_CACHE_FILE    , 21   ,
-File           , GET_CACHE_FILE    , 22   ,
-File           , DEL_CACHE_FILE    , 23   ,
-File           , DEL_SUBFOLDER     , 24   ,
-File           , GET_LOG_NAME      , 25   ,
-File           , OPEN_LOG          , 27   ,
-File           , READ_BYTES        , 28   ,
-File           , WRITE_BYTES       , 29   ,
-File           , REMOVE            , 30   ,
-File           , MOVE              , 31   ,
+File           , OPEN_APPEND       , 0    , s.h
+File           , OPEN_READ         , 1    , s.hd
+File           , OPEN_WRITE        , 2    , s.h
+File           , READ_VALUE        , 3    , hb.f
+File           , WRITE_VALUE       , 4    , h.bfbb
+File           , READ_TEXT         , 5    , hbb.b+
+File           , WRITE_TEXT        , 6    , hbs.
+File           , CLOSE             , 7    , h.
+File           , LOAD_IMAGE        , 8    , ws.dd
+File           , GET_HANDLE        , 9    , s.hb
+File           , MAKE_FOLDER       , 10   , s.b
+File           , GET_POOL          , 11   , s.hd
+File           , SET_LOG_SYNC_TIME , 12   , dd.
+File           , GET_FOLDERS       , 13   , s.b
+File           , GET_LOG_SYNC_TIME , 14   , dd.
+File           , GET_SUBFOLDER_NAME, 15   , sbb.b+
+File           , WRITE_LOG         , 16   , hdbf.
+File           , CLOSE_LOG         , 17   , hs.
+File           , GET_IMAGE         , 18   , swb.d
+File           , GET_ITEM          , 19   , ss.b
+File           , GET_CACHE_FILES   , 20   , .b
+File           , PUT_CACHE_FILE    , 21   , s.
+File           , GET_CACHE_FILE    , 22   , bb.b+
+File           , DEL_CACHE_FILE    , 23   , bb.b+
+File           , DEL_SUBFOLDER     , 24   , sb.
+File           , GET_LOG_NAME      , 25   , bs.
+File           , OPEN_LOG          , 27   , sddddds.h
+File           , READ_BYTES        , 28   , hw.b+
+File           , WRITE_BYTES       , 29   , hwb+.
+File           , REMOVE            , 30   , h.
+File           , MOVE              , 31   , ss.
 Array          ,                   , 0xC1 ,
-Array          , DELETE            , 0    ,
-Array          , CREATE8           , 1    ,
-Array          , CREATE16          , 2    ,
-Array          , CREATE32          , 3    ,
-Array          , CREATEF           , 4    ,
-Array          , RESIZE            , 5    ,
-Array          , FILL              , 6    ,
-Array          , COPY              , 7    ,
-Array          , INIT8             , 8    ,
-Array          , INIT16            , 9    ,
-Array          , INIT32            , 10   ,
-Array          , INITF             , 11   ,
-Array          , SIZE              , 12   ,
-Array          , READ_CONTENT      , 13   ,
-Array          , WRITE_CONTENT     , 14   ,
-Array          , READ_SIZE         , 15   ,
-ArrayWrite     ,                   , 0xC2 ,
-ArrayRead      ,                   , 0xC3 ,
-ArrayAppend    ,                   , 0xC4 ,
-MemoryUsage    ,                   , 0xC5 ,
+Array          , DELETE            , 0    , h.
+Array          , CREATE8           , 1    , d.h
+Array          , CREATE16          , 2    , d.h
+Array          , CREATE32          , 3    , d.h
+Array          , CREATEF           , 4    , d.h
+Array          , RESIZE            , 5    , hd.
+Array          , FILL              , 6    , hv.
+Array          , COPY              , 7    , hh.
+Array          , INIT8             , 8    , hddb+.
+Array          , INIT16            , 9    , hddw+.
+Array          , INIT32            , 10   , hddd+.
+Array          , INITF             , 11   , hddf+.
+Array          , SIZE              , 12   , h.d
+Array          , READ_CONTENT      , 13   , Whdd.b+
+Array          , WRITE_CONTENT     , 14   , whddb+
+Array          , READ_SIZE         , 15   , wh.d
+ArrayWrite     ,                   , 0xC2 , hdv.
+ArrayRead      ,                   , 0xC3 , hdv.
+ArrayAppend    ,                   , 0xC4 , hv.
+MemoryUsage    ,                   , 0xC5 , .dd
 Filename       ,                   , 0xC6 ,
-Filename       , EXIST             , 16   ,
-Filename       , TOTALSIZE         , 17   ,
-Filename       , SPLIT             , 18   ,
-Filename       , MERGE             , 19   ,
-Filename       , CHECK             , 20   ,
-Filename       , PACK              , 21   ,
-Filename       , UNPACK            , 22   ,
-Filename       , GET_FOLDERNAME    , 23   ,
-Read8          ,                   , 0xC8 ,
-Read16         ,                   , 0xC9 ,
-Read32         ,                   , 0xCA ,
-Readf          ,                   , 0xCB ,
-Write8         ,                   , 0xCC ,
-Write16        ,                   , 0xCD ,
-Write32        ,                   , 0xCE ,
-Writef         ,                   , 0xCF ,
-ComReady       ,                   , 0xD0 ,
+Filename       , EXIST             , 16   , s.b
+Filename       , TOTALSIZE         , 17   , s.dd
+Filename       , SPLIT             , 18   , sbs.b+b+
+Filename       , MERGE             , 19   , sssb.b+
+Filename       , CHECK             , 20   , s.b
+Filename       , PACK              , 21   , s.
+Filename       , UNPACK            , 22   , s.
+Filename       , GET_FOLDERNAME    , 23   , b.b+
+Read8          ,                   , 0xC8 , b+b.b
+Read16         ,                   , 0xC9 , w+b.w
+Read32         ,                   , 0xCA , d+b.d
+Readf          ,                   , 0xCB , f+b.f
+Write8         ,                   , 0xCC , bbbl
+Write16        ,                   , 0xCD , wbw.
+Write32        ,                   , 0xCE , dbdl
+Writef         ,                   , 0xCF , fbf.
+ComReady       ,                   , 0xD0 , bb.
 ComReaddata    ,                   , 0xD1 ,
 ComWritedata   ,                   , 0xD2 ,
 ComGet         ,                   , 0xD3 ,
-ComGet         , GET_ON_OFF        , 1    ,
-ComGet         , GET_VISIBLE       , 2    ,
-ComGet         , GET_RESULT        , 4    ,
-ComGet         , GET_PIN           , 5    ,
-ComGet         , SEARCH_ITEMS      , 8    ,
-ComGet         , SEARCH_ITEM       , 9    ,
-ComGet         , FAVOUR_ITEMS      , 10   ,
-ComGet         , FAVOUR_ITEM       , 11   ,
-ComGet         , GET_ID            , 12   ,
-ComGet         , GET_BRICKNAME     , 13   ,
-ComGet         , GET_NETWORK       , 14   ,
-ComGet         , GET_PRESENT       , 15   ,
-ComGet         , GET_ENCRYPT       , 16   ,
+ComGet         , GET_ON_OFF        , 1    , b.b
+ComGet         , GET_VISIBLE       , 2    , b.b
+ComGet         , GET_RESULT        , 4    , bb.b
+ComGet         , GET_PIN           , 5    , bsb.b
+ComGet         , SEARCH_ITEMS      , 8    , b.b
+ComGet         , SEARCH_ITEM       , 9    , bbb.b+bbbb
+ComGet         , FAVOUR_ITEMS      , 10   , b.b
+ComGet         , FAVOUR_ITEM       , 11   , bbb.b+bbb
+ComGet         , GET_ID            , 12   , bb.b+
+ComGet         , GET_BRICKNAME     , 13   , b.b+
+ComGet         , GET_NETWORK       , 14   , bb.b+b+b+
+ComGet         , GET_PRESENT       , 15   , b.b
+ComGet         , GET_ENCRYPT       , 16   , bb.b
 ComGet         , CONNEC_ITEMS      , 17   ,
 ComGet         , CONNEC_ITEM       , 18   ,
-ComGet         , GET_INCOMING      , 19   ,
+ComGet         , GET_INCOMING      , 19   , bb.b+
 ComGet         , GET_MODE2         , 20   ,
 ComSet         ,                   , 0xD4 ,
-ComSet         , SET_ON_OFF        , 1    ,
-ComSet         , SET_VISIBLE       , 2    ,
-ComSet         , SET_SEARCH        , 3    ,
-ComSet         , SET_PIN           , 5    ,
-ComSet         , SET_PASSKEY       , 6    ,
-ComSet         , SET_CONNECTION    , 7    ,
-ComSet         , SET_BRICKNAME     , 8    ,
-ComSet         , SET_MOVEUP        , 9    ,
-ComSet         , SET_MOVEDOWN      , 10   ,
-ComSet         , SET_ENCRYPT       , 11   ,
-ComSet         , SET_SSID          , 12   ,
+ComSet         , SET_ON_OFF        , 1    , bb.
+ComSet         , SET_VISIBLE       , 2    , bb.
+ComSet         , SET_SEARCH        , 3    , bb.
+ComSet         , SET_PIN           , 5    , bss.
+ComSet         , SET_PASSKEY       , 6    , bb.
+ComSet         , SET_CONNECTION    , 7    , bsb.
+ComSet         , SET_BRICKNAME     , 8    , s.
+ComSet         , SET_MOVEUP        , 9    , bb.
+ComSet         , SET_MOVEDOWN      , 10   , bb.
+ComSet         , SET_ENCRYPT       , 11   , bbb.
+ComSet         , SET_SSID          , 12   , bs.
 ComSet         , SET_MODE2         , 13   ,
-ComTest        ,                   , 0xD5 ,
+ComTest        ,                   , 0xD5 , bb.b
 ComRemove      ,                   , 0xD6 ,
 ComWritefile   ,                   , 0xD7 ,
-MailboxOpen    ,                   , 0xD8 ,
-MailboxWrite   ,                   , 0xD9 ,
-MailboxRead    ,                   , 0xDA ,
-MailboxTest    ,                   , 0xDB ,
-MailboxReady   ,                   , 0xDC ,
-MailboxClose   ,                   , 0xDD ,
+MailboxOpen    ,                   , 0xD8 , bbbbb.b
+MailboxWrite   ,                   , 0xD9 , sbbbb?.
+MailboxRead    ,                   , 0xDA , bbb.?
+MailboxTest    ,                   , 0xDB , b.b
+MailboxReady   ,                   , 0xDC , b.
+MailboxClose   ,                   , 0xDD , b.
 Tst            ,                   , 0xFF ,
 Tst            , OPEN              , 10   ,
 Tst            , CLOSE             , 11   ,
