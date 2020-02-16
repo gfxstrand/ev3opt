@@ -120,9 +120,10 @@ impl ${enum.name()} {
 % endfor
 """)
 
-with open(sys.argv[1]) as f:
+def main():
     try:
-        print(TEMPLATE.render(enums=parse_enums(f)))
+        with open(sys.argv[1]) as f:
+            print(TEMPLATE.render(enums=parse_enums(f)))
     except Exception:
         # In the event there's an error, this imports some helpers from mako
         # to print a useful stack trace and prints it, then exits with
@@ -134,3 +135,7 @@ with open(sys.argv[1]) as f:
             sys.stderr.write(exceptions.text_error_template().render() + '\n')
             sys.exit(1)
         raise
+
+
+if __name__ == '__main__':
+    main()
