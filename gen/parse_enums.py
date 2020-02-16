@@ -1,7 +1,8 @@
 #! /usr/bin/python3
 
-import sys
+from mako.template import Template
 import re
+import sys
 
 RENAMES = {
     'OP'            : 'Opcode',
@@ -59,38 +60,8 @@ class Enum(object):
         for key, value in self._values.items():
             yield sanitize_name(key, self._name == 'OP'), value
 
-    def print(self, values_camel_case):
-        # Define the enum
-        print('#[allow(dead_code)]')
-        print('pub enum ' + self.name() + ' {')
-        for key, value in self.items():
-            print('    #[allow(non_camel_case_types)]')
-            print('    ' + key + ' = ' + value + ',')
-        print('}\n')
-
-        # Add some helpers
-        print('impl ' + self.name() + ' {')
-        print('    #[allow(dead_code)]')
-        print('    pub fn from_i32(i: i32) -> std::result::Result<' +
-                                    self.name() + ', &\'static str> {')
-        print('        match i {')
-        for key, value in self.items():
-            print('            ' + value + ' => Ok(' + self.name() + '::' + key + '),')
-        print('            _ => Err("Invalid enum value for ' + self.name() + '")')
-        print('        }')
-        print('    }')
-        print('')
-        print('    #[allow(dead_code)]')
-        print('    pub fn to_str(&self) -> &\'static str {')
-        print('        match self {')
-        for key, value in self.items():
-            print('            ' + self.name() + '::' + key + ' => "' + key + '",')
-        print('        }')
-        print('    }')
-        print('}\n')
-
 def parse_enums(f):
-    enums = []
+    enums = { }
     enum = None
 
     for line in f.readlines():
@@ -100,7 +71,7 @@ def parse_enums(f):
         elif re.match(r'[A-Z_]*;', line):
             enum.set_name(line[0:-2])
             assert enum._values
-            enums.append(enum)
+            enums[enum.name()] = enum
             enum = None
         else:
             m = re.match(' *(op)?(?P<name>[0-9A-Z_]+) *= *(?P<value>[x0-9A-F]+).*', line)
@@ -109,10 +80,50 @@ def parse_enums(f):
 
     return enums
 
+TEMPLATE = Template("""\
+% for enum in enums.values():
+#[allow(dead_code)]
+pub enum ${enum.name()} {
+% for key, value in enum.items():
+    #[allow(non_camel_case_types)]
+    ${key} = ${value},
+% endfor
+}
+
+impl ${enum.name()} {
+    #[allow(dead_code)]
+    pub fn from_i32(i: i32) -> std::result::Result<${enum.name()}, &'static str> {
+        match i {
+% for key, value in enum.items():
+            ${value} => Ok(${enum.name()}::${key}),
+% endfor
+            _ => Err("Invalid enum value for ${enum.name()}")
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn to_str(&self) -> &'static str {
+        match self {
+% for key, value in enum.items():
+            ${enum.name()}::${key} => "${key}",
+% endfor
+        }
+    }
+}
+% endfor
+""")
+
 with open(sys.argv[1]) as f:
-    enums = parse_enums(f)
-    for e in enums:
-        if e.name == 'OP':
-            e.print(True)
-        else:
-            e.print(False)
+    try:
+        print(TEMPLATE.render(enums=parse_enums(f)))
+    except Exception:
+        # In the event there's an error, this imports some helpers from mako
+        # to print a useful stack trace and prints it, then exits with
+        # status 1, if python is run with debug; otherwise it just raises
+        # the exception
+        if __debug__:
+            import sys
+            from mako import exceptions
+            sys.stderr.write(exceptions.text_error_template().render() + '\n')
+            sys.exit(1)
+        raise

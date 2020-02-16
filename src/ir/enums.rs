@@ -844,7 +844,6 @@ impl Opcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum UiReadSubcode {
     #[allow(non_camel_case_types)]
@@ -959,7 +958,6 @@ impl UiReadSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum UiWriteSubcode {
     #[allow(non_camel_case_types)]
@@ -1070,7 +1068,6 @@ impl UiWriteSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum UiButtonSubcode {
     #[allow(non_camel_case_types)]
@@ -1149,7 +1146,6 @@ impl UiButtonSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ComReadSubcode {
     #[allow(non_camel_case_types)]
@@ -1172,7 +1168,6 @@ impl ComReadSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ComWriteSubcode {
     #[allow(non_camel_case_types)]
@@ -1195,7 +1190,6 @@ impl ComWriteSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ComGetSubcode {
     #[allow(non_camel_case_types)]
@@ -1282,7 +1276,6 @@ impl ComGetSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ComSetSubcode {
     #[allow(non_camel_case_types)]
@@ -1349,7 +1342,6 @@ impl ComSetSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum InputDeviceSubcode {
     #[allow(non_camel_case_types)]
@@ -1472,7 +1464,6 @@ impl InputDeviceSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ProgramInfoSubcode {
     #[allow(non_camel_case_types)]
@@ -1515,7 +1506,6 @@ impl ProgramInfoSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum UiDrawSubcode {
     #[allow(non_camel_case_types)]
@@ -1666,7 +1656,6 @@ impl UiDrawSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum FileSubcode {
     #[allow(non_camel_case_types)]
@@ -1809,7 +1798,6 @@ impl FileSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum ArraySubcode {
     #[allow(non_camel_case_types)]
@@ -1892,7 +1880,6 @@ impl ArraySubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum FilenameSubcode {
     #[allow(non_camel_case_types)]
@@ -1943,7 +1930,6 @@ impl FilenameSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum InfoSubcode {
     #[allow(non_camel_case_types)]
@@ -1990,7 +1976,6 @@ impl InfoSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum SoundSubcode {
     #[allow(non_camel_case_types)]
@@ -2029,7 +2014,6 @@ impl SoundSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum StringSubcode {
     #[allow(non_camel_case_types)]
@@ -2092,7 +2076,6 @@ impl StringSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Type {
     #[allow(non_camel_case_types)]
@@ -2211,7 +2194,6 @@ impl Type {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Slot {
     #[allow(non_camel_case_types)]
@@ -2250,7 +2232,6 @@ impl Slot {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Buttontype {
     #[allow(non_camel_case_types)]
@@ -2305,7 +2286,6 @@ impl Buttontype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Mathtype {
     #[allow(non_camel_case_types)]
@@ -2408,7 +2388,6 @@ impl Mathtype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum TstSubcode {
     #[allow(non_camel_case_types)]
@@ -2483,7 +2462,6 @@ impl TstSubcode {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Browsertype {
     #[allow(non_camel_case_types)]
@@ -2518,7 +2496,6 @@ impl Browsertype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Fonttype {
     #[allow(non_camel_case_types)]
@@ -2553,7 +2530,6 @@ impl Fonttype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Icontype {
     #[allow(non_camel_case_types)]
@@ -2592,7 +2568,6 @@ impl Icontype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum SIconNo {
     #[allow(non_camel_case_types)]
@@ -2679,7 +2654,6 @@ impl SIconNo {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum NIconNo {
     #[allow(non_camel_case_types)]
@@ -2830,7 +2804,6 @@ impl NIconNo {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum LIconNo {
     #[allow(non_camel_case_types)]
@@ -2953,7 +2926,6 @@ impl LIconNo {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum MIconNo {
     #[allow(non_camel_case_types)]
@@ -3016,7 +2988,6 @@ impl MIconNo {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum AIconNo {
     #[allow(non_camel_case_types)]
@@ -3043,7 +3014,6 @@ impl AIconNo {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Bttype {
     #[allow(non_camel_case_types)]
@@ -3078,7 +3048,6 @@ impl Bttype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Ledpattern {
     #[allow(non_camel_case_types)]
@@ -3137,7 +3106,6 @@ impl Ledpattern {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Ledtype {
     #[allow(non_camel_case_types)]
@@ -3176,7 +3144,6 @@ impl Ledtype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Filetype {
     #[allow(non_camel_case_types)]
@@ -3235,7 +3202,6 @@ impl Filetype {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Result {
     #[allow(non_camel_case_types)]
@@ -3274,7 +3240,6 @@ impl Result {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum DataFormat {
     #[allow(non_camel_case_types)]
@@ -3333,7 +3298,6 @@ impl DataFormat {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Del {
     #[allow(non_camel_case_types)]
@@ -3384,7 +3348,6 @@ impl Del {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum HWType {
     #[allow(non_camel_case_types)]
@@ -3415,7 +3378,6 @@ impl HWType {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Encrypt {
     #[allow(non_camel_case_types)]
@@ -3442,7 +3404,6 @@ impl Encrypt {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Color {
     #[allow(non_camel_case_types)]
@@ -3477,7 +3438,6 @@ impl Color {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum NXTColor {
     #[allow(non_camel_case_types)]
@@ -3520,7 +3480,6 @@ impl NXTColor {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Warning {
     #[allow(non_camel_case_types)]
@@ -3575,7 +3534,6 @@ impl Warning {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Objstat {
     #[allow(non_camel_case_types)]
@@ -3610,7 +3568,6 @@ impl Objstat {
         }
     }
 }
-
 #[allow(dead_code)]
 pub enum Devcmd {
     #[allow(non_camel_case_types)]
