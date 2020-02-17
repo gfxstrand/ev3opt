@@ -21,6 +21,7 @@
  */
 use std::env;
 use std::process;
+use std::path::Path;
 
 mod rbf;
 mod ir;
@@ -33,7 +34,15 @@ fn main() {
         process::exit(1);
     }
 
-    let query = &args[1];
+    let path = Path::new(&args[1]);
 
-    println!("{:?}", query);
+    let image = match rbf::read_rbf_file(path) {
+        Ok(i) => i,
+        Err(why) => {
+            println!("Failed to parse file: {}", why);
+            process::exit(1);
+        },
+    };
+
+    print!("{}", image);
 }
