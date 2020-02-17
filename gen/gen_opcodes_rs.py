@@ -146,6 +146,10 @@ impl Opcode {
         }
     }
 
+    pub fn has_subcode(&self) -> bool {
+        Opcode::u8_has_subcode(self.to_u8())
+    }
+
     pub fn from_u8(op: u8, subcode: u8) -> Result<Opcode, &'static str> {
         match op {
 % for op in opcodes.values():
@@ -184,6 +188,17 @@ impl Opcode {
             Opcode::${op.name} => ${op.value},
 % endif
 % endfor
+        }
+    }
+
+    pub fn get_subcode_as_u8(&self) -> u8 {
+        match self {
+% for op in opcodes.values():
+% if op.subcodes:
+            Opcode::${op.name}(subcode) => *subcode as u8,
+% endif
+% endfor
+            _ => panic!("Opcode has no subcode"),
         }
     }
 

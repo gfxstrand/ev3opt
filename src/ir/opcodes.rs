@@ -1293,7 +1293,7 @@ pub enum Opcode {
 }
 
 impl Opcode {
-    fn u8_has_subcode(op: u8) -> bool {
+    pub fn u8_has_subcode(op: u8) -> bool {
         match op {
             0x0C => true,
             0x7C => true,
@@ -1314,6 +1314,10 @@ impl Opcode {
             0xD4 => true,
             _ => false,
         }
+    }
+
+    pub fn has_subcode(&self) -> bool {
+        Opcode::u8_has_subcode(self.to_u8())
     }
 
     pub fn from_u8(op: u8, subcode: u8) -> Result<Opcode, &'static str> {
@@ -2167,6 +2171,29 @@ impl Opcode {
             Opcode::MailboxTest => 0xDB,
             Opcode::MailboxReady => 0xDC,
             Opcode::MailboxClose => 0xDD,
+        }
+    }
+
+    pub fn get_subcode_as_u8(&self) -> u8 {
+        match self {
+            Opcode::ProgramInfo(subcode) => *subcode as u8,
+            Opcode::Info(subcode) => *subcode as u8,
+            Opcode::String(subcode) => *subcode as u8,
+            Opcode::UiRead(subcode) => *subcode as u8,
+            Opcode::UiWrite(subcode) => *subcode as u8,
+            Opcode::UiButton(subcode) => *subcode as u8,
+            Opcode::UiDraw(subcode) => *subcode as u8,
+            Opcode::Math(subcode) => *subcode as u8,
+            Opcode::ComRead(subcode) => *subcode as u8,
+            Opcode::ComWrite(subcode) => *subcode as u8,
+            Opcode::Sound(subcode) => *subcode as u8,
+            Opcode::InputDevice(subcode) => *subcode as u8,
+            Opcode::File(subcode) => *subcode as u8,
+            Opcode::Array(subcode) => *subcode as u8,
+            Opcode::Filename(subcode) => *subcode as u8,
+            Opcode::ComGet(subcode) => *subcode as u8,
+            Opcode::ComSet(subcode) => *subcode as u8,
+            _ => panic!("Opcode has no subcode"),
         }
     }
 

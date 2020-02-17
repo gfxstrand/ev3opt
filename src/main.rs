@@ -22,6 +22,9 @@
 use std::env;
 use std::process;
 
+mod rbf;
+mod ir;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
