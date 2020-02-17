@@ -58,23 +58,23 @@ fn read_u8(r: &mut dyn io::Read) -> io::Result<u8> {
     Ok(buf[0])
 }
 
+fn read_le_u16(r: &mut dyn io::Read) -> io::Result<u16> {
+    let mut buf = [0u8; 2];
+    r.read_exact(&mut buf)?;
+    Ok(u16::from_le_bytes(buf))
+}
+
+fn read_le_u32(r: &mut dyn io::Read) -> io::Result<u32> {
+    let mut buf = [0u8; 4];
+    r.read_exact(&mut buf)?;
+    Ok(u32::from_le_bytes(buf))
+}
+
 fn read_param_imm_i32(r: &mut dyn io::Read, enc: u8) -> io::Result<i32> {
     match enc {
-        PRIMPAR_1_BYTE => {
-            let mut buf = [0u8; 1];
-            r.read_exact(&mut buf)?;
-            Ok(buf[0] as i8 as i32)
-        },
-        PRIMPAR_2_BYTES => {
-            let mut buf = [0u8; 2];
-            r.read_exact(&mut buf)?;
-            Ok(i16::from_le_bytes(buf) as i32)
-        },
-        PRIMPAR_4_BYTES => {
-            let mut buf = [0u8; 4];
-            r.read_exact(&mut buf)?;
-            Ok(i32::from_le_bytes(buf))
-        },
+        PRIMPAR_1_BYTE => Ok(read_u8(r)? as i8 as i32),
+        PRIMPAR_2_BYTES => Ok(read_le_u16(r)? as i16 as i32),
+        PRIMPAR_4_BYTES => Ok(read_le_u32(r)? as i32),
         _ => Err(io::Error::new(io::ErrorKind::Other,
                  "Invalid parameter encoding")),
     }
@@ -82,21 +82,9 @@ fn read_param_imm_i32(r: &mut dyn io::Read, enc: u8) -> io::Result<i32> {
 
 fn read_param_imm_u32(r: &mut dyn io::Read, enc: u8) -> io::Result<u32> {
     match enc {
-        PRIMPAR_1_BYTE => {
-            let mut buf = [0u8; 1];
-            r.read_exact(&mut buf)?;
-            Ok(buf[0] as u32)
-        },
-        PRIMPAR_2_BYTES => {
-            let mut buf = [0u8; 2];
-            r.read_exact(&mut buf)?;
-            Ok(u16::from_le_bytes(buf) as u32)
-        },
-        PRIMPAR_4_BYTES => {
-            let mut buf = [0u8; 4];
-            r.read_exact(&mut buf)?;
-            Ok(u32::from_le_bytes(buf))
-        },
+        PRIMPAR_1_BYTE => Ok(read_u8(r)? as u32),
+        PRIMPAR_2_BYTES => Ok(read_le_u16(r)? as u32),
+        PRIMPAR_4_BYTES => read_le_u32(r),
         _ => Err(io::Error::new(io::ErrorKind::Other,
                  "Invalid parameter encoding")),
     }
@@ -104,9 +92,7 @@ fn read_param_imm_u32(r: &mut dyn io::Read, enc: u8) -> io::Result<u32> {
 
 fn read_param(r: &mut dyn io::Read) -> io::Result<ir::Parameter> {
     /* Read just the first byte to start with */
-    let mut header_buf = [0u8, 1];
-    r.read_exact(&mut header_buf)?;
-    let header = header_buf[0];
+    let header = read_u8(r)?;
 
     if (header & PRIMPAR_LONG) != 0 {
         let enc = header & PRIMPAR_BYTES;
