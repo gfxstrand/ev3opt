@@ -191,7 +191,6 @@ fn write_param_imm_u32(w: &mut dyn io::Write, header: u8, val: u32) -> io::Resul
 
 pub fn write_param(w: &mut dyn io::Write, param: &ir::Parameter) -> io::Result<()> {
     match param {
-        ir::Parameter::None => panic!("Cannot encode None"),
         ir::Parameter::Local(val) => write_param_imm_u32(w, 0x40u8, *val),
         ir::Parameter::Global(val) => write_param_imm_u32(w, 0x60u8, *val),
         ir::Parameter::Constant(val) => write_param_imm_i32(w, 0x00u8, *val),

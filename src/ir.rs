@@ -24,7 +24,6 @@ mod opcodes;
 pub use opcodes::Opcode;
 
 pub enum Parameter {
-    None,
     Local(u32),
     Global(u32),
     Constant(i32),
