@@ -190,7 +190,7 @@ pub fn write_param(w: &mut dyn io::Write, param: &ir::Parameter) -> io::Result<(
     }
 }
 
-fn read_instruction(r: &mut dyn io::Read) -> io::Result<ir::Instruction> {
+fn read_instruction(r: &mut dyn io::Read, ip: u32) -> io::Result<ir::Instruction> {
     let opcode_u8 = read_u8(r)?;
     let has_subcode = ir::Opcode::u8_has_subcode(opcode_u8);
     let subcode_u8 = if has_subcode { read_u8(r)? } else { 0 };
@@ -217,6 +217,7 @@ fn read_instruction(r: &mut dyn io::Read) -> io::Result<ir::Instruction> {
         }
     }
     Ok(ir::Instruction {
+        ip: ip,
         op: opcode,
         inputs: inputs,
         outputs: outputs,
@@ -235,4 +236,75 @@ fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Resu
         write_param(w, &param)?;
     }
     Ok(())
+}
+
+pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
+    let file = match File::open(&path) {
+        Err(why) => panic!("couldn't open {}: {}", path.display(),
+                                                   why.description()),
+        Ok(file) => file,
+    };
+
+    use io::Read;
+    use io::Seek;
+    let mut reader = io::BufReader::new(file);
+    let r = &mut reader;
+
+    let mut sign = [0u8; 4];
+    r.read_exact(&mut sign);
+    if sign != ['L' as u8, 'E' as u8, 'G' as u8, 'O' as u8] {
+        return Err(io::Error::new(io::ErrorKind::Other,
+                   "Not a valid LEGO EV3 bytecode file"));
+    }
+
+    /* Read the image header */
+    let _ = read_le_u32(r)?;
+    let image_version = read_le_u16(r)?;
+    let num_objects = read_le_u16(r)? as usize;
+    let image_global_bytes = read_le_u32(r)?;
+
+    /* Read object headers */
+    let mut objects: Vec<ir::Object> = vec![];
+    let mut obj_offsets: Vec<u32> = vec![];
+    for _ in 0..num_objects {
+        obj_offsets.push(read_le_u32(r)?);
+        objects.push(ir::Object {
+            owner_id: read_le_u16(r)?,
+            trigger_count: read_le_u16(r)?,
+            local_bytes: read_le_u32(r)?,
+            instrs: vec![],
+        });
+    }
+
+    /* Read instructions */
+    for obj_idx in 0..num_objects {
+        let obj_start = obj_offsets[obj_idx];
+        let obj = &mut objects[obj_idx];
+
+        r.seek(io::SeekFrom::Start(obj_offsets[obj_idx] as u64))?;
+        loop {
+            let cur_offset = r.seek(io::SeekFrom::Current(0))?;
+            if cur_offset >= u32::max_value() as u64 {
+                return Err(io::Error::new(io::ErrorKind::Other,
+                           "File offset too large"));
+            }
+            let cur_offset = cur_offset as u32;
+            assert!(cur_offset >= obj_start);
+            let ip = cur_offset - obj_start;
+
+            let instr = read_instruction(r, ip)?;
+            match instr.op {
+                ir::Opcode::ObjectEnd => break,
+                _ => {},
+            }
+            println!("{}", instr);
+            obj.instrs.push(instr);
+        }
+    }
+
+    Ok(ir::Image {
+        version: image_version,
+        global_bytes: image_global_bytes,
+        objects: objects,
+    })
 }
