@@ -161,7 +161,14 @@ pub struct Object {
     pub trigger_count: u16,
     pub local_bytes: u32,
 
+    pub params: Vec<ParamType>,
     pub instrs: Vec<Instruction>,
+}
+
+impl Object {
+    pub fn is_subcall(&self) -> bool {
+        self.owner_id == 0 && self.trigger_count == 1
+    }
 }
 
 impl fmt::Display for Object {
@@ -170,6 +177,13 @@ impl fmt::Display for Object {
         write!(f, "    owner_id: {}\n", self.owner_id)?;
         write!(f, "    trigger_count: {}\n", self.trigger_count)?;
         write!(f, "    local_bytes: {}\n", self.local_bytes)?;
+        if self.is_subcall() {
+            write!(f, "\n    proto:")?;
+            for param in self.params.iter() {
+                write!(f, " {}", param)?;
+            }
+            write!(f, "\n")?;
+        }
         write!(f, "\n")?;
         for instr in self.instrs.iter() {
             write!(f, "    {}\n", instr)?;
@@ -188,9 +202,9 @@ pub struct Image {
 impl fmt::Display for Image {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "version: {}\n", self.version)?;
-        write!(f, "global_bytes: {}\n", self.global_bytes)?;
+        write!(f, "global_bytes: {}", self.global_bytes)?;
         for obj in self.objects.iter() {
-            write!(f, "\n{}", obj)?;
+            write!(f, "\n\n{}", obj)?;
         }
         Ok(())
     }

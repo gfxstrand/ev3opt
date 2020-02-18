@@ -42,6 +42,16 @@ const PRIMPAR_4_BYTES: u8       = 3;
 const PRIMPAR_STRING: u8        = 4;
 const PRIMPAR_LABEL: u8         = 0x20;
 
+const CALLPAR_IN: u8            = 0x80;
+const CALLPAR_OUT: u8           = 0x40;
+
+const CALLPAR_TYPE: u8          = 0x07;
+const CALLPAR_DATA8: u8         = 0x00;
+const CALLPAR_DATA16: u8        = 0x01;
+const CALLPAR_DATA32: u8        = 0x02;
+const CALLPAR_DATAF: u8         = 0x03;
+const CALLPAR_STRING: u8        = 0x04;
+
 fn sign_extend_i32(x: i32, bits: u8) -> i32 {
     let shift = 32 - bits;
     (x << shift) >> shift
@@ -190,7 +200,7 @@ pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Res
     }
 }
 
-fn read_instruction(r: &mut dyn io::Read, ip: u32) -> io::Result<ir::Instruction> {
+fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) -> io::Result<ir::Instruction> {
     let opcode_u8 = read_u8(r)?;
     let has_subcode = ir::Opcode::u8_has_subcode(opcode_u8);
     let subcode_u8 = if has_subcode { read_u8(r)? } else { 0 };
@@ -200,11 +210,46 @@ fn read_instruction(r: &mut dyn io::Read, ip: u32) -> io::Result<ir::Instruction
     };
 
     let mut params = Vec::new();
-    for param_type in opcode.get_proto() {
-        params.push(ir::Parameter {
-            param_type: *param_type,
-            value: read_param_value(r)?,
-        });
+    match opcode {
+        ir::Opcode::Call => {
+            let obj_id_value = read_param_value(r)?;
+            let obj_id = match obj_id_value {
+                ir::ParamValue::Constant(x) => x,
+                _ => return Err(io::Error::new(io::ErrorKind::Other,
+                                "Object for Call instruction must be constant")),
+            };
+            /* Objects are 1-indexed */
+            if obj_id == 0 {
+                return Err(io::Error::new(io::ErrorKind::Other,
+                           "Call instruction 1-index objects; 0 is invalid"));
+            }
+            let obj_id = obj_id - 1;
+            params.push(ir::Parameter {
+                param_type: ir::ParamType::Input(ir::DataType::Int16),
+                value: obj_id_value,
+            });
+
+            let num_params = read_u8(r)?;
+            let proto = &objects[obj_id as usize].params;
+            if proto.len() != num_params as usize {
+                return Err(io::Error::new(io::ErrorKind::Other,
+                           "Call instruction has param count mismatch"));
+            }
+            for param_type in proto {
+                params.push(ir::Parameter {
+                    param_type: *param_type,
+                    value: read_param_value(r)?,
+                });
+            }
+        },
+        _ => {
+            for param_type in opcode.get_proto() {
+                params.push(ir::Parameter {
+                    param_type: *param_type,
+                    value: read_param_value(r)?,
+                });
+            }
+        },
     }
     Ok(ir::Instruction {
         ip: ip,
@@ -222,6 +267,27 @@ fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Resu
         write_param_value(w, &param.value)?;
     }
     Ok(())
+}
+
+fn read_call_param_type(r: &mut dyn io::Read) -> io::Result<ir::ParamType> {
+    let param = read_u8(r)?;
+    let data_type = match param & CALLPAR_TYPE {
+        CALLPAR_DATA8 => ir::DataType::Int8,
+        CALLPAR_DATA16 => ir::DataType::Int16,
+        CALLPAR_DATA32 => ir::DataType::Int32,
+        CALLPAR_DATAF => ir::DataType::Float,
+        CALLPAR_STRING => ir::DataType::String(read_u8(r)?),
+        _ => return Err(io::Error::new(io::ErrorKind::Other,
+                        "Invalid subcall parameter type"))
+    };
+    if (param & CALLPAR_IN) != 0 {
+        Ok(ir::ParamType::Input(data_type))
+    } else if (param & CALLPAR_OUT) != 0 {
+        Ok(ir::ParamType::Output(data_type))
+    } else {
+        Err(io::Error::new(io::ErrorKind::Other,
+            "Invalid subcall parameter type"))
+    }
 }
 
 pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
@@ -258,16 +324,28 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
             owner_id: read_le_u16(r)?,
             trigger_count: read_le_u16(r)?,
             local_bytes: read_le_u32(r)?,
+            params: vec![],
             instrs: vec![],
         });
+    }
+
+    /* Read object prototypes for subroutines */
+    for obj_idx in 0..num_objects {
+        let obj = &mut objects[obj_idx];
+        if obj.is_subcall() {
+            r.seek(io::SeekFrom::Start(obj_offsets[obj_idx] as u64))?;
+            let num_params = read_u8(r)?;
+            for _ in 0..num_params {
+                obj.params.push(read_call_param_type(r)?);
+            }
+            obj_offsets[obj_idx] = r.seek(io::SeekFrom::Current(0))? as u32;
+        }
     }
 
     /* Read instructions */
     for obj_idx in 0..num_objects {
         let obj_start = obj_offsets[obj_idx];
-        let obj = &mut objects[obj_idx];
-
-        r.seek(io::SeekFrom::Start(obj_offsets[obj_idx] as u64))?;
+        r.seek(io::SeekFrom::Start(obj_start as u64))?;
         loop {
             let cur_offset = r.seek(io::SeekFrom::Current(0))?;
             if cur_offset >= u32::max_value() as u64 {
@@ -278,13 +356,12 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
             assert!(cur_offset >= obj_start);
             let ip = cur_offset - obj_start;
 
-            let instr = read_instruction(r, ip)?;
+            let instr = read_instruction(r, &objects, ip)?;
             match instr.op {
                 ir::Opcode::ObjectEnd => break,
                 _ => {},
             }
-            println!("{}", instr);
-            obj.instrs.push(instr);
+            objects[obj_idx].instrs.push(instr);
         }
     }
 
