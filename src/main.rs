@@ -29,14 +29,14 @@ mod ir;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() != 2 {
+    if args.len() != 2 && args.len() != 3 {
         println!("Usage: {} filename", args[0]);
         process::exit(1);
     }
 
-    let path = Path::new(&args[1]);
+    let in_path = Path::new(&args[1]);
 
-    let image = match rbf::read_rbf_file(path) {
+    let image = match rbf::read_rbf_file(in_path) {
         Ok(i) => i,
         Err(why) => {
             println!("Failed to parse file: {}", why);
@@ -45,4 +45,15 @@ fn main() {
     };
 
     print!("{}", image);
+
+    if args.len() == 3 {
+        let out_path = Path::new(&args[2]);
+        match rbf::write_rbf_file(out_path, &image) {
+            Ok(i) => {},
+            Err(why) => {
+                println!("Failed to write file: {}", why);
+                process::exit(1);
+            },
+        }
+    }
 }

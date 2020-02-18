@@ -27,8 +27,11 @@ use std::path::Path;
 
 use crate::ir;
 
+const PRIMPAR_SHORT: u8         = 0x00;
 const PRIMPAR_LONG: u8          = 0x80;
+const PRIMPAR_CONST: u8         = 0x00;
 const PRIMPAR_VARIABLE: u8      = 0x40;
+const PRIMPAR_LOCAL: u8         = 0x00;
 const PRIMPAR_GLOBAL: u8        = 0x20;
 const PRIMPAR_HANDLE: u8        = 0x10;
 const PRIMPAR_ADDR: u8          = 0x08;
@@ -167,7 +170,7 @@ fn read_param_value(r: &mut dyn io::Read) -> io::Result<ir::ParamValue> {
 
 fn write_param_imm_i32(w: &mut dyn io::Write, header: u8, val: i32) -> io::Result<()> {
     if val == sign_extend_i32(val, 6) {
-        write_u8(w, header | ((val as u8) & PRIMPAR_VALUE))
+        write_u8(w, header | PRIMPAR_SHORT | ((val as u8) & PRIMPAR_VALUE))
     } else if val == sign_extend_i32(val, 8) {
         write_u8(w, header | PRIMPAR_LONG | PRIMPAR_1_BYTE)?;
         write_u8(w, val as u8)
@@ -182,7 +185,7 @@ fn write_param_imm_i32(w: &mut dyn io::Write, header: u8, val: i32) -> io::Resul
 
 fn write_param_imm_u32(w: &mut dyn io::Write, header: u8, val: u32) -> io::Result<()> {
     if val == truncate_u32(val, 5) {
-        write_u8(w, header | ((val as u8) & PRIMPAR_INDEX))
+        write_u8(w, header | PRIMPAR_SHORT | ((val as u8) & PRIMPAR_INDEX))
     } else if val == truncate_u32(val, 8) {
         write_u8(w, header | PRIMPAR_LONG | PRIMPAR_1_BYTE)?;
         write_u8(w, val as u8)
@@ -197,9 +200,15 @@ fn write_param_imm_u32(w: &mut dyn io::Write, header: u8, val: u32) -> io::Resul
 
 pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Result<()> {
     match val {
-        ir::ParamValue::Local(i) => write_param_imm_u32(w, 0x40u8, *i),
-        ir::ParamValue::Global(i) => write_param_imm_u32(w, 0x60u8, *i),
-        ir::ParamValue::Constant(x) => write_param_imm_i32(w, 0x00u8, *x),
+        ir::ParamValue::Local(i) => {
+            write_param_imm_u32(w, PRIMPAR_VARIABLE | PRIMPAR_LOCAL, *i)
+        }
+        ir::ParamValue::Global(i) => {
+            write_param_imm_u32(w, PRIMPAR_VARIABLE | PRIMPAR_GLOBAL, *i)
+        }
+        ir::ParamValue::Constant(x) => {
+            write_param_imm_i32(w, PRIMPAR_CONST, *x)
+        }
         ir::ParamValue::String(s) => {
             w.write(&[PRIMPAR_LONG | PRIMPAR_STRING])?;
             w.write(s.as_slice())?;
@@ -300,6 +309,24 @@ fn read_call_param_type(r: &mut dyn io::Read) -> io::Result<ir::ParamType> {
     }
 }
 
+fn write_call_param_type(w: &mut dyn io::Write, param: &ir::ParamType) -> io::Result<()> {
+    let inout = match param {
+        ir::ParamType::Input(_) => CALLPAR_IN,
+        ir::ParamType::Output(_) => CALLPAR_OUT,
+    };
+    match param.data_type() {
+        ir::DataType::Int8 => write_u8(w, inout | CALLPAR_DATA8),
+        ir::DataType::Int16 => write_u8(w, inout | CALLPAR_DATA16),
+        ir::DataType::Int32 => write_u8(w, inout | CALLPAR_DATA32),
+        ir::DataType::Float => write_u8(w, inout | CALLPAR_DATAF),
+        ir::DataType::String(len) => {
+            write_u8(w, inout | CALLPAR_STRING)?;
+            write_u8(w, len)
+        },
+        _ => panic!("Invalid data type for subcall parameter"),
+    }
+}
+
 pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
     let file = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", path.display(),
@@ -380,4 +407,53 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
         global_bytes: image_global_bytes,
         objects: objects,
     })
+}
+
+pub fn write_rbf_file(path: &Path, image: &ir::Image) -> io::Result<()> {
+    let file = match File::create(&path) {
+        Err(why) => panic!("couldn't open {}: {}", path.display(),
+                                                   why.description()),
+        Ok(file) => file,
+    };
+
+    use io::Write;
+    use io::Seek;
+    let mut writer = io::BufWriter::new(file);
+    let w = &mut writer;
+
+    /* Skip past the image and object headers; we'll write them later */
+    w.seek(io::SeekFrom::Start(16 + (image.objects.len() as u64) * 12))?;
+
+    let mut obj_offsets: Vec<u32> = vec![];
+    for obj in image.objects.iter() {
+        obj_offsets.push(w.seek(io::SeekFrom::Current(0))? as u32);
+        if obj.is_subcall() {
+            write_u8(w, obj.params.len() as u8)?;
+            for param in obj.params.iter() {
+                write_call_param_type(w, param)?;
+            }
+        }
+        for instr in obj.instrs.iter() {
+            write_instruction(w, instr)?;
+        }
+    }
+    let image_size = w.seek(io::SeekFrom::Current(0))? as u32;
+
+    /* Now we can write the image and object headers */
+    w.seek(io::SeekFrom::Start(0))?;
+
+    w.write_all(&['L' as u8, 'E' as u8, 'G' as u8, 'O' as u8])?;
+    write_le_u32(w, image_size)?;
+    write_le_u16(w, image.version)?;
+    write_le_u16(w, image.objects.len() as u16)?;
+    write_le_u32(w, image.global_bytes)?;
+
+    for obj_idx in 0..image.objects.len() {
+        write_le_u32(w, obj_offsets[obj_idx])?;
+        write_le_u16(w, image.objects[obj_idx].owner_id)?;
+        write_le_u16(w, image.objects[obj_idx].trigger_count)?;
+        write_le_u32(w, image.objects[obj_idx].local_bytes)?;
+    }
+
+    Ok(())
 }
