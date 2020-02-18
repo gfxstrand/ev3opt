@@ -225,9 +225,9 @@ fn read_instruction(r: &mut dyn io::Read, ip: u32) -> io::Result<ir::Instruction
 }
 
 fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Result<()> {
-    w.write(&[instr.op.to_u8()]);
+    w.write(&[instr.op.to_u8()])?;
     if instr.op.has_subcode() {
-        w.write(&[instr.op.get_subcode_as_u8()]);
+        w.write(&[instr.op.get_subcode_as_u8()])?;
     }
     for param in &instr.inputs {
         write_param(w, &param)?;
@@ -251,7 +251,7 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
     let r = &mut reader;
 
     let mut sign = [0u8; 4];
-    r.read_exact(&mut sign);
+    r.read_exact(&mut sign)?;
     if sign != ['L' as u8, 'E' as u8, 'G' as u8, 'O' as u8] {
         return Err(io::Error::new(io::ErrorKind::Other,
                    "Not a valid LEGO EV3 bytecode file"));
