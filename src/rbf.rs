@@ -90,7 +90,7 @@ fn read_param_imm_u32(r: &mut dyn io::Read, enc: u8) -> io::Result<u32> {
     }
 }
 
-fn read_param(r: &mut dyn io::Read) -> io::Result<ir::Parameter> {
+fn read_param_value(r: &mut dyn io::Read) -> io::Result<ir::ParamValue> {
     /* Read just the first byte to start with */
     let header = read_u8(r)?;
 
@@ -100,9 +100,9 @@ fn read_param(r: &mut dyn io::Read) -> io::Result<ir::Parameter> {
         if (header & PRIMPAR_VARIABLE) != 0 {
             let index = read_param_imm_u32(r, enc)?;
             if (header & PRIMPAR_GLOBAL) != 0 {
-                Ok(ir::Parameter::Global(index))
+                Ok(ir::ParamValue::Global(index))
             } else {
-                Ok(ir::Parameter::Local(index))
+                Ok(ir::ParamValue::Local(index))
             }
         } else {
             /* Long constant */
@@ -117,12 +117,12 @@ fn read_param(r: &mut dyn io::Read) -> io::Result<ir::Parameter> {
                             r.read_exact(&mut buf)?;
                             if buf[0] == 0 {
                                 /* We don't store the NULL */
-                                return Ok(ir::Parameter::String(v));
+                                return Ok(ir::ParamValue::String(v));
                             }
                             v.push(buf[0])
                         }
                     },
-                    _ => Ok(ir::Parameter::Constant(read_param_imm_i32(r, enc)?)),
+                    _ => Ok(ir::ParamValue::Constant(read_param_imm_i32(r, enc)?)),
                 }
             }
         }
@@ -132,13 +132,13 @@ fn read_param(r: &mut dyn io::Read) -> io::Result<ir::Parameter> {
             /* Parameters indices aren't sign-extended */
             let index = (header & PRIMPAR_INDEX) as u32;
             if (header & PRIMPAR_GLOBAL) != 0 {
-                Ok(ir::Parameter::Global(index))
+                Ok(ir::ParamValue::Global(index))
             } else {
-                Ok(ir::Parameter::Local(index))
+                Ok(ir::ParamValue::Local(index))
             }
         } else {
             /* Short constant; sign-extend the 6-bit value */
-            Ok(ir::Parameter::Constant(sign_extend_i32(header as i32, 6)))
+            Ok(ir::ParamValue::Constant(sign_extend_i32(header as i32, 6)))
         }
     }
 }
@@ -175,14 +175,14 @@ fn write_param_imm_u32(w: &mut dyn io::Write, header: u8, val: u32) -> io::Resul
     Ok(())
 }
 
-pub fn write_param(w: &mut dyn io::Write, param: &ir::Parameter) -> io::Result<()> {
-    match param {
-        ir::Parameter::Local(val) => write_param_imm_u32(w, 0x40u8, *val),
-        ir::Parameter::Global(val) => write_param_imm_u32(w, 0x60u8, *val),
-        ir::Parameter::Constant(val) => write_param_imm_i32(w, 0x00u8, *val),
-        ir::Parameter::String(val) => {
+pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Result<()> {
+    match val {
+        ir::ParamValue::Local(i) => write_param_imm_u32(w, 0x40u8, *i),
+        ir::ParamValue::Global(i) => write_param_imm_u32(w, 0x60u8, *i),
+        ir::ParamValue::Constant(x) => write_param_imm_i32(w, 0x00u8, *x),
+        ir::ParamValue::String(s) => {
             w.write(&[PRIMPAR_LONG | PRIMPAR_STRING])?;
-            w.write(val.as_slice())?;
+            w.write(s.as_slice())?;
             /* We don't store the NULL */
             w.write(&[0u8])?;
             Ok(())
@@ -199,28 +199,17 @@ fn read_instruction(r: &mut dyn io::Read, ip: u32) -> io::Result<ir::Instruction
         Err(val) => return Err(io::Error::new(io::ErrorKind::Other, val)),
     };
 
-    let mut inputs = Vec::new();
-    let mut outputs = Vec::new();
-    let mut is_input = true;
-    for c in opcode.get_proto().chars() {
-        match c {
-            'b' | 'w' | 'd' | 's' | 'h' | 'o' => {
-                if is_input {
-                    inputs.push(read_param(r)?);
-                } else {
-                    outputs.push(read_param(r)?);
-                }
-            },
-            '.' => is_input = false,
-            '+' => { },
-            _ => panic!("Invalid parameter prototype"),
-        }
+    let mut params = Vec::new();
+    for param_type in opcode.get_proto() {
+        params.push(ir::Parameter {
+            param_type: *param_type,
+            value: read_param_value(r)?,
+        });
     }
     Ok(ir::Instruction {
         ip: ip,
         op: opcode,
-        inputs: inputs,
-        outputs: outputs,
+        params: params,
     })
 }
 
@@ -229,11 +218,8 @@ fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Resu
     if instr.op.has_subcode() {
         w.write(&[instr.op.get_subcode_as_u8()])?;
     }
-    for param in &instr.inputs {
-        write_param(w, &param)?;
-    }
-    for param in &instr.outputs {
-        write_param(w, &param)?;
+    for param in &instr.params {
+        write_param_value(w, &param.value)?;
     }
     Ok(())
 }

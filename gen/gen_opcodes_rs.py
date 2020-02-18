@@ -27,6 +27,7 @@ LICENSE = """\
 from mako.template import Template
 import csv
 import sys
+import re
 
 OPCODE_IDX = 0
 SUBCODE_IDX = 1
@@ -44,6 +45,43 @@ class Opcode(object):
         if self.subcodes is None:
             self.subcodes = { }
         self.subcodes[subcode.name] = subcode
+
+    def proto_as_ParamTypes(self):
+        param_type = 'Input'
+        for c in re.findall(r'[a-z\.]\+?', self.proto):
+            if c == 'b':
+                data_type = 'Int8'
+            elif c == 'b+':
+                data_type = 'Int8Array'
+            elif c == 'w':
+                data_type = 'Int16'
+            elif c == 'w+':
+                data_type = 'Int16Array'
+            elif c == 'd':
+                data_type = 'Int32'
+            elif c == 'd+':
+                data_type = 'Int32Array'
+            elif c == 'f':
+                data_type = 'Float'
+            elif c == 'f+':
+                data_type = 'FloatArray'
+            elif c == 's':
+                data_type = 'String(0)'
+            elif c == 'h':
+                data_type = 'Handle'
+            elif c == 'o':
+                data_type = 'Offset'
+            elif c == 'v':
+                # TODO: These types are technically variable and based on
+                # the dynamic handle.  Not sure how we should handle that.
+                data_type = 'Int32'
+            elif c == '.':
+                param_type = 'Output'
+                continue
+            else:
+                print(c)
+                assert False
+            yield "{}({})".format(param_type, data_type)
 
 def parse_csv(f):
     reader = csv.reader(f, delimiter=',')
@@ -87,6 +125,7 @@ TEMPLATE = Template(LICENSE + """\
 #![allow(non_camel_case_types)]
 
 use std::result::Result;
+use crate::ir;
 
 % for op in opcodes.values():
 % if op.subcodes:
@@ -202,17 +241,21 @@ impl Opcode {
         }
     }
 
-    pub fn get_proto(&self) -> &'static str {
+    pub fn get_proto(&self) -> &'static [ir::ParamType] {
+        use ir::DataType::*;
+        use ir::ParamType::*;
         match self {
 % for op in opcodes.values():
 % if op.subcodes:
             Opcode::${op.name}(subcode) => match subcode {
 % for subcode in op.subcodes.values():
-                ${op.name}Subcode::${subcode.name} => "${subcode.proto}",
+                ${op.name}Subcode::${subcode.name} =>
+                    &[ ${", ".join(subcode.proto_as_ParamTypes())} ],
 % endfor
             },
 % else:
-            Opcode::${op.name} => "${op.proto}",
+            Opcode::${op.name} =>
+                &[ ${", ".join(op.proto_as_ParamTypes())} ],
 % endif
 % endfor
         }

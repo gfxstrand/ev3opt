@@ -26,6 +26,7 @@
 #![allow(non_camel_case_types)]
 
 use std::result::Result;
+use crate::ir;
 
 
 #[derive(Copy, Clone)]
@@ -2197,456 +2198,872 @@ impl Opcode {
         }
     }
 
-    pub fn get_proto(&self) -> &'static str {
+    pub fn get_proto(&self) -> &'static [ir::ParamType] {
+        use ir::DataType::*;
+        use ir::ParamType::*;
         match self {
-            Opcode::Error => ".",
-            Opcode::Nop => ".",
-            Opcode::ProgramStop => "w.",
-            Opcode::ProgramStart => "wddb.",
-            Opcode::ObjectStop => "w.",
-            Opcode::ObjectStart => "w.",
-            Opcode::ObjectTrig => "w.",
-            Opcode::ObjectWait => "w.",
-            Opcode::Return => ".",
-            Opcode::Call => "wb?",
-            Opcode::ObjectEnd => ".",
-            Opcode::Sleep => ".",
+            Opcode::Error =>
+                &[  ],
+            Opcode::Nop =>
+                &[  ],
+            Opcode::ProgramStop =>
+                &[ Input(Int16) ],
+            Opcode::ProgramStart =>
+                &[ Input(Int16), Input(Int32), Input(Int32), Input(Int8) ],
+            Opcode::ObjectStop =>
+                &[ Input(Int16) ],
+            Opcode::ObjectStart =>
+                &[ Input(Int16) ],
+            Opcode::ObjectTrig =>
+                &[ Input(Int16) ],
+            Opcode::ObjectWait =>
+                &[ Input(Int16) ],
+            Opcode::Return =>
+                &[  ],
+            Opcode::Call =>
+                &[ Input(Int16), Input(Int8) ],
+            Opcode::ObjectEnd =>
+                &[  ],
+            Opcode::Sleep =>
+                &[  ],
             Opcode::ProgramInfo(subcode) => match subcode {
-                ProgramInfoSubcode::OBJ_STOP => "ww.",
-                ProgramInfoSubcode::OBJ_START => "ww.",
-                ProgramInfoSubcode::GET_STATUS => "w.b",
-                ProgramInfoSubcode::GET_SPEED => "w.d",
-                ProgramInfoSubcode::GET_PRGRESULT => "w.b",
+                ProgramInfoSubcode::OBJ_STOP =>
+                    &[ Input(Int16), Input(Int16) ],
+                ProgramInfoSubcode::OBJ_START =>
+                    &[ Input(Int16), Input(Int16) ],
+                ProgramInfoSubcode::GET_STATUS =>
+                    &[ Input(Int16), Output(Int8) ],
+                ProgramInfoSubcode::GET_SPEED =>
+                    &[ Input(Int16), Output(Int32) ],
+                ProgramInfoSubcode::GET_PRGRESULT =>
+                    &[ Input(Int16), Output(Int8) ],
             },
-            Opcode::Label => "u.",
-            Opcode::Probe => "wwdd.",
-            Opcode::Do => "wdd.",
-            Opcode::Add8 => "bb.b",
-            Opcode::Add16 => "ww.w",
-            Opcode::Add32 => "dd.d",
-            Opcode::AddF => "ff.f",
-            Opcode::Sub8 => "bb.b",
-            Opcode::Sub16 => "ww.w",
-            Opcode::Sub32 => "dd.d",
-            Opcode::SubF => "ff.f",
-            Opcode::Mul8 => "bb.b",
-            Opcode::Mul16 => "ww.w",
-            Opcode::Mul32 => "dd.d",
-            Opcode::MulF => "ff.f",
-            Opcode::Div8 => "bb.b",
-            Opcode::Div16 => "ww.w",
-            Opcode::Div32 => "dd.d",
-            Opcode::DivF => "ff.f",
-            Opcode::Or8 => "bb.b",
-            Opcode::Or16 => "ww.w",
-            Opcode::Or32 => "dd.d",
-            Opcode::And8 => "bb.b",
-            Opcode::And16 => "ww.w",
-            Opcode::And32 => "dd.d",
-            Opcode::Xor8 => "bb.b",
-            Opcode::Xor16 => "ww.w",
-            Opcode::Xor32 => "dd.d",
-            Opcode::Rl8 => "bb.b",
-            Opcode::Rl16 => "ww.w",
-            Opcode::Rl32 => "dd.d",
-            Opcode::InitBytes => "db+.b+",
-            Opcode::Move8_8 => "b.b",
-            Opcode::Move8_16 => "b.w",
-            Opcode::Move8_32 => "b.d",
-            Opcode::Move8_F => "b.f",
-            Opcode::Move16_8 => "w.b",
-            Opcode::Move16_16 => "w.w",
-            Opcode::Move16_32 => "w.d",
-            Opcode::Move16_F => "w.f",
-            Opcode::Move32_8 => "d.b",
-            Opcode::Move32_16 => "d.w",
-            Opcode::Move32_32 => "d.d",
-            Opcode::Move32_F => "d.f",
-            Opcode::MoveF_8 => "f.b",
-            Opcode::MoveF_16 => "f.w",
-            Opcode::MoveF_32 => "f.d",
-            Opcode::MoveF_F => "f.f",
-            Opcode::Jr => "o.",
-            Opcode::JrFalse => "bo.",
-            Opcode::JrTrue => "bo.",
-            Opcode::JrNan => "fo.",
-            Opcode::CpLt8 => "bb.b",
-            Opcode::CpLt16 => "ww.b",
-            Opcode::CpLt32 => "dd.b",
-            Opcode::CpLtf => "ff.b",
-            Opcode::CpGt8 => "bb.b",
-            Opcode::CpGt16 => "ww.b",
-            Opcode::CpGt32 => "dd.b",
-            Opcode::CpGtf => "ff.b",
-            Opcode::CpEq8 => "bb.b",
-            Opcode::CpEq16 => "ww.b",
-            Opcode::CpEq32 => "dd.b",
-            Opcode::CpEqf => "ff.b",
-            Opcode::CpNeq8 => "bb.b",
-            Opcode::CpNeq16 => "ww.b",
-            Opcode::CpNeq32 => "dd.b",
-            Opcode::CpNeqf => "ff.b",
-            Opcode::CpLteq8 => "bb.b",
-            Opcode::CpLteq16 => "ww.b",
-            Opcode::CpLteq32 => "dd.b",
-            Opcode::CpLteqf => "ff.b",
-            Opcode::CpGteq8 => "bb.b",
-            Opcode::CpGteq16 => "ww.b",
-            Opcode::CpGteq32 => "dd.b",
-            Opcode::CpGteqf => "ff.b",
-            Opcode::Select8 => "bbb.b",
-            Opcode::Select16 => "bww.w",
-            Opcode::Select32 => "bdd.d",
-            Opcode::Selectf => "bff.f",
-            Opcode::System => "b.d",
-            Opcode::PortCnvOutput => "dbbb.",
-            Opcode::PortCnvInput => "dbb.",
-            Opcode::NoteToFreq => "b.w",
-            Opcode::JrLt8 => "bbo.",
-            Opcode::JrLt16 => "wwo.",
-            Opcode::JrLt32 => "ddo.",
-            Opcode::JrLtf => "ffo.",
-            Opcode::JrGt8 => "bbo.",
-            Opcode::JrGt16 => "wwo.",
-            Opcode::JrGt32 => "ddo.",
-            Opcode::JrGtf => "ffo.",
-            Opcode::JrEq8 => "bbo.",
-            Opcode::JrEq16 => "wwo.",
-            Opcode::JrEq32 => "ddo.",
-            Opcode::JrEqf => "ffo.",
-            Opcode::JrNeq8 => "bbo.",
-            Opcode::JrNeq16 => "wwo.",
-            Opcode::JrNeq32 => "ddo.",
-            Opcode::JrNeqf => "ffo.",
-            Opcode::JrLteq8 => "bbo.",
-            Opcode::JrLteq16 => "wwo.",
-            Opcode::JrLteq32 => "ddo.",
-            Opcode::JrLteqf => "ffo.",
-            Opcode::JrGteq8 => "bbo.",
-            Opcode::JrGteq16 => "wwo.",
-            Opcode::JrGteq32 => "ddo.",
-            Opcode::JrGteqf => "ffo.",
+            Opcode::Label =>
+                &[ Input(Int8) ],
+            Opcode::Probe =>
+                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32) ],
+            Opcode::Do =>
+                &[ Input(Int16), Input(Int32), Input(Int32) ],
+            Opcode::Add8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Add16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Add32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::AddF =>
+                &[ Input(Float), Input(Float), Output(Float) ],
+            Opcode::Sub8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Sub16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Sub32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::SubF =>
+                &[ Input(Float), Input(Float), Output(Float) ],
+            Opcode::Mul8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Mul16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Mul32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::MulF =>
+                &[ Input(Float), Input(Float), Output(Float) ],
+            Opcode::Div8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Div16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Div32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::DivF =>
+                &[ Input(Float), Input(Float), Output(Float) ],
+            Opcode::Or8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Or16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Or32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::And8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::And16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::And32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::Xor8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Xor16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Xor32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::Rl8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Rl16 =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Rl32 =>
+                &[ Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::InitBytes =>
+                &[ Input(Int32), Input(Int8Array), Output(Int8Array) ],
+            Opcode::Move8_8 =>
+                &[ Input(Int8), Output(Int8) ],
+            Opcode::Move8_16 =>
+                &[ Input(Int8), Output(Int16) ],
+            Opcode::Move8_32 =>
+                &[ Input(Int8), Output(Int32) ],
+            Opcode::Move8_F =>
+                &[ Input(Int8), Output(Float) ],
+            Opcode::Move16_8 =>
+                &[ Input(Int16), Output(Int8) ],
+            Opcode::Move16_16 =>
+                &[ Input(Int16), Output(Int16) ],
+            Opcode::Move16_32 =>
+                &[ Input(Int16), Output(Int32) ],
+            Opcode::Move16_F =>
+                &[ Input(Int16), Output(Float) ],
+            Opcode::Move32_8 =>
+                &[ Input(Int32), Output(Int8) ],
+            Opcode::Move32_16 =>
+                &[ Input(Int32), Output(Int16) ],
+            Opcode::Move32_32 =>
+                &[ Input(Int32), Output(Int32) ],
+            Opcode::Move32_F =>
+                &[ Input(Int32), Output(Float) ],
+            Opcode::MoveF_8 =>
+                &[ Input(Float), Output(Int8) ],
+            Opcode::MoveF_16 =>
+                &[ Input(Float), Output(Int16) ],
+            Opcode::MoveF_32 =>
+                &[ Input(Float), Output(Int32) ],
+            Opcode::MoveF_F =>
+                &[ Input(Float), Output(Float) ],
+            Opcode::Jr =>
+                &[ Input(Offset) ],
+            Opcode::JrFalse =>
+                &[ Input(Int8), Input(Offset) ],
+            Opcode::JrTrue =>
+                &[ Input(Int8), Input(Offset) ],
+            Opcode::JrNan =>
+                &[ Input(Float), Input(Offset) ],
+            Opcode::CpLt8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpLt16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpLt32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpLtf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::CpGt8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpGt16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpGt32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpGtf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::CpEq8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpEq16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpEq32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpEqf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::CpNeq8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpNeq16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpNeq32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpNeqf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::CpLteq8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpLteq16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpLteq32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpLteqf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::CpGteq8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::CpGteq16 =>
+                &[ Input(Int16), Input(Int16), Output(Int8) ],
+            Opcode::CpGteq32 =>
+                &[ Input(Int32), Input(Int32), Output(Int8) ],
+            Opcode::CpGteqf =>
+                &[ Input(Float), Input(Float), Output(Int8) ],
+            Opcode::Select8 =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::Select16 =>
+                &[ Input(Int8), Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::Select32 =>
+                &[ Input(Int8), Input(Int32), Input(Int32), Output(Int32) ],
+            Opcode::Selectf =>
+                &[ Input(Int8), Input(Float), Input(Float), Output(Float) ],
+            Opcode::System =>
+                &[ Input(Int8), Output(Int32) ],
+            Opcode::PortCnvOutput =>
+                &[ Input(Int32), Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::PortCnvInput =>
+                &[ Input(Int32), Input(Int8), Input(Int8) ],
+            Opcode::NoteToFreq =>
+                &[ Input(Int8), Output(Int16) ],
+            Opcode::JrLt8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrLt16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrLt32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrLtf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
+            Opcode::JrGt8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrGt16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrGt32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrGtf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
+            Opcode::JrEq8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrEq16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrEq32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrEqf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
+            Opcode::JrNeq8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrNeq16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrNeq32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrNeqf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
+            Opcode::JrLteq8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrLteq16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrLteq32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrLteqf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
+            Opcode::JrGteq8 =>
+                &[ Input(Int8), Input(Int8), Input(Offset) ],
+            Opcode::JrGteq16 =>
+                &[ Input(Int16), Input(Int16), Input(Offset) ],
+            Opcode::JrGteq32 =>
+                &[ Input(Int32), Input(Int32), Input(Offset) ],
+            Opcode::JrGteqf =>
+                &[ Input(Float), Input(Float), Input(Offset) ],
             Opcode::Info(subcode) => match subcode {
-                InfoSubcode::SET_ERROR => "b.",
-                InfoSubcode::GET_ERROR => "b.",
-                InfoSubcode::ERRORTEXT => "bb.b",
-                InfoSubcode::GET_VOLUME => ".b",
-                InfoSubcode::SET_VOLUME => "b.",
-                InfoSubcode::GET_MINUTES => ".b",
-                InfoSubcode::SET_MINUTES => "b.",
+                InfoSubcode::SET_ERROR =>
+                    &[ Input(Int8) ],
+                InfoSubcode::GET_ERROR =>
+                    &[ Input(Int8) ],
+                InfoSubcode::ERRORTEXT =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                InfoSubcode::GET_VOLUME =>
+                    &[ Output(Int8) ],
+                InfoSubcode::SET_VOLUME =>
+                    &[ Input(Int8) ],
+                InfoSubcode::GET_MINUTES =>
+                    &[ Output(Int8) ],
+                InfoSubcode::SET_MINUTES =>
+                    &[ Input(Int8) ],
             },
             Opcode::String(subcode) => match subcode {
-                StringSubcode::GET_SIZE => "s.w",
-                StringSubcode::ADD => "ss.s",
-                StringSubcode::COMPARE => "ss.b",
-                StringSubcode::DUPLICATE => "s.s",
-                StringSubcode::VALUE_TO_STRING => "fbb.s",
-                StringSubcode::STRING_TO_VALUE => "s.f",
-                StringSubcode::STRIP => "s.s",
-                StringSubcode::NUMBER_TO_STRING => "wb.s",
-                StringSubcode::SUB => "ss.s",
-                StringSubcode::VALUE_FORMATTED => "fbb.s",
-                StringSubcode::NUMBER_FORMATTED => "dbb.s",
+                StringSubcode::GET_SIZE =>
+                    &[ Input(String(0)), Output(Int16) ],
+                StringSubcode::ADD =>
+                    &[ Input(String(0)), Input(String(0)), Output(String(0)) ],
+                StringSubcode::COMPARE =>
+                    &[ Input(String(0)), Input(String(0)), Output(Int8) ],
+                StringSubcode::DUPLICATE =>
+                    &[ Input(String(0)), Output(String(0)) ],
+                StringSubcode::VALUE_TO_STRING =>
+                    &[ Input(Float), Input(Int8), Input(Int8), Output(String(0)) ],
+                StringSubcode::STRING_TO_VALUE =>
+                    &[ Input(String(0)), Output(Float) ],
+                StringSubcode::STRIP =>
+                    &[ Input(String(0)), Output(String(0)) ],
+                StringSubcode::NUMBER_TO_STRING =>
+                    &[ Input(Int16), Input(Int8), Output(String(0)) ],
+                StringSubcode::SUB =>
+                    &[ Input(String(0)), Input(String(0)), Output(String(0)) ],
+                StringSubcode::VALUE_FORMATTED =>
+                    &[ Input(Float), Input(Int8), Input(Int8), Output(String(0)) ],
+                StringSubcode::NUMBER_FORMATTED =>
+                    &[ Input(Int32), Input(Int8), Input(Int8), Output(String(0)) ],
             },
-            Opcode::MemoryWrite => "wwddb+.",
-            Opcode::MemoryRead => "wwdd.b+",
-            Opcode::UiFlush => ".",
+            Opcode::MemoryWrite =>
+                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Input(Int8Array) ],
+            Opcode::MemoryRead =>
+                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Output(Int8Array) ],
+            Opcode::UiFlush =>
+                &[  ],
             Opcode::UiRead(subcode) => match subcode {
-                UiReadSubcode::GET_VBATT => ".f",
-                UiReadSubcode::GET_IBATT => ".f",
-                UiReadSubcode::GET_OS_VERS => "u.b+",
-                UiReadSubcode::GET_EVENT => ".b",
-                UiReadSubcode::GET_TBATT => ".f",
-                UiReadSubcode::GET_IMOTOR => ".f",
-                UiReadSubcode::GET_STRING => "b.b+",
-                UiReadSubcode::GET_HW_VERS => "d.b+",
-                UiReadSubcode::GET_FW_VERS => "d.b+",
-                UiReadSubcode::GET_FW_BUILD => "d.b+",
-                UiReadSubcode::GET_OS_BUILD => "d.b+",
-                UiReadSubcode::GET_ADDRESS => "d.",
-                UiReadSubcode::GET_CODE => "d.ddb",
-                UiReadSubcode::KEY => "b.",
-                UiReadSubcode::GET_SHUTDOWN => ".b",
-                UiReadSubcode::GET_WARNING => ".b",
-                UiReadSubcode::GET_LBATT => ".b",
-                UiReadSubcode::TEXTBOX_READ => "sdbbw.b+",
-                UiReadSubcode::GET_VERSION => "d.b+",
-                UiReadSubcode::GET_IP => "d.b+",
-                UiReadSubcode::GET_SDCARD => ".bdd",
-                UiReadSubcode::GET_USBSTICK => ".bdd",
+                UiReadSubcode::GET_VBATT =>
+                    &[ Output(Float) ],
+                UiReadSubcode::GET_IBATT =>
+                    &[ Output(Float) ],
+                UiReadSubcode::GET_OS_VERS =>
+                    &[ Input(Int8), Output(Int8Array) ],
+                UiReadSubcode::GET_EVENT =>
+                    &[ Output(Int8) ],
+                UiReadSubcode::GET_TBATT =>
+                    &[ Output(Float) ],
+                UiReadSubcode::GET_IMOTOR =>
+                    &[ Output(Float) ],
+                UiReadSubcode::GET_STRING =>
+                    &[ Input(Int8), Output(Int8Array) ],
+                UiReadSubcode::GET_HW_VERS =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_FW_VERS =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_FW_BUILD =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_OS_BUILD =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_ADDRESS =>
+                    &[ Input(Int32) ],
+                UiReadSubcode::GET_CODE =>
+                    &[ Input(Int32), Output(Int32), Output(Int32), Output(Int8) ],
+                UiReadSubcode::KEY =>
+                    &[ Input(Int8) ],
+                UiReadSubcode::GET_SHUTDOWN =>
+                    &[ Output(Int8) ],
+                UiReadSubcode::GET_WARNING =>
+                    &[ Output(Int8) ],
+                UiReadSubcode::GET_LBATT =>
+                    &[ Output(Int8) ],
+                UiReadSubcode::TEXTBOX_READ =>
+                    &[ Input(String(0)), Input(Int32), Input(Int8), Input(Int8), Input(Int16), Output(Int8Array) ],
+                UiReadSubcode::GET_VERSION =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_IP =>
+                    &[ Input(Int32), Output(Int8Array) ],
+                UiReadSubcode::GET_SDCARD =>
+                    &[ Output(Int8), Output(Int32), Output(Int32) ],
+                UiReadSubcode::GET_USBSTICK =>
+                    &[ Output(Int8), Output(Int32), Output(Int32) ],
             },
             Opcode::UiWrite(subcode) => match subcode {
-                UiWriteSubcode::WRITE_FLUSH => ".",
-                UiWriteSubcode::FLOATVALUE => "fbb.s",
-                UiWriteSubcode::PUT_STRING => "s.",
-                UiWriteSubcode::VALUE8 => "b.",
-                UiWriteSubcode::VALUE16 => "w.",
-                UiWriteSubcode::VALUE32 => "d.",
-                UiWriteSubcode::VALUEF => "f.",
-                UiWriteSubcode::DOWNLOAD_END => ".",
-                UiWriteSubcode::SCREEN_BLOCK => "b.",
-                UiWriteSubcode::TEXTBOX_APPEND => "sdbb.",
-                UiWriteSubcode::SET_BUSY => "b.",
-                UiWriteSubcode::SET_TESTPIN => "b.",
-                UiWriteSubcode::INIT_RUN => ".",
-                UiWriteSubcode::LED => "b.",
-                UiWriteSubcode::POWER => "b.",
-                UiWriteSubcode::GRAPH_SAMPLE => ".",
-                UiWriteSubcode::TERMINAL => "b.",
+                UiWriteSubcode::WRITE_FLUSH =>
+                    &[  ],
+                UiWriteSubcode::FLOATVALUE =>
+                    &[ Input(Float), Input(Int8), Input(Int8), Output(String(0)) ],
+                UiWriteSubcode::PUT_STRING =>
+                    &[ Input(String(0)) ],
+                UiWriteSubcode::VALUE8 =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::VALUE16 =>
+                    &[ Input(Int16) ],
+                UiWriteSubcode::VALUE32 =>
+                    &[ Input(Int32) ],
+                UiWriteSubcode::VALUEF =>
+                    &[ Input(Float) ],
+                UiWriteSubcode::DOWNLOAD_END =>
+                    &[  ],
+                UiWriteSubcode::SCREEN_BLOCK =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::TEXTBOX_APPEND =>
+                    &[ Input(String(0)), Input(Int32), Input(Int8), Input(Int8) ],
+                UiWriteSubcode::SET_BUSY =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::SET_TESTPIN =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::INIT_RUN =>
+                    &[  ],
+                UiWriteSubcode::LED =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::POWER =>
+                    &[ Input(Int8) ],
+                UiWriteSubcode::GRAPH_SAMPLE =>
+                    &[  ],
+                UiWriteSubcode::TERMINAL =>
+                    &[ Input(Int8) ],
             },
             Opcode::UiButton(subcode) => match subcode {
-                UiButtonSubcode::SHORTPRESS => "b.b",
-                UiButtonSubcode::LONGPRESS => "b.b",
-                UiButtonSubcode::WAIT_FOR_PRESS => ".",
-                UiButtonSubcode::FLUSH => ".",
-                UiButtonSubcode::PRESS => "b.",
-                UiButtonSubcode::RELEASE => "b.",
-                UiButtonSubcode::GET_HORZ => ".w",
-                UiButtonSubcode::GET_VERT => ".w",
-                UiButtonSubcode::PRESSED => "b.b",
-                UiButtonSubcode::SET_BACK_BLOCK => "b.",
-                UiButtonSubcode::GET_BACK_BLOCK => ".b",
-                UiButtonSubcode::TESTSHORTPRESS => "b.b",
-                UiButtonSubcode::TESTLONGPRESS => "b.b",
-                UiButtonSubcode::GET_BUMBED => "b.b",
-                UiButtonSubcode::GET_CLICK => ".b",
+                UiButtonSubcode::SHORTPRESS =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::LONGPRESS =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::WAIT_FOR_PRESS =>
+                    &[  ],
+                UiButtonSubcode::FLUSH =>
+                    &[  ],
+                UiButtonSubcode::PRESS =>
+                    &[ Input(Int8) ],
+                UiButtonSubcode::RELEASE =>
+                    &[ Input(Int8) ],
+                UiButtonSubcode::GET_HORZ =>
+                    &[ Output(Int16) ],
+                UiButtonSubcode::GET_VERT =>
+                    &[ Output(Int16) ],
+                UiButtonSubcode::PRESSED =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::SET_BACK_BLOCK =>
+                    &[ Input(Int8) ],
+                UiButtonSubcode::GET_BACK_BLOCK =>
+                    &[ Output(Int8) ],
+                UiButtonSubcode::TESTSHORTPRESS =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::TESTLONGPRESS =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::GET_BUMBED =>
+                    &[ Input(Int8), Output(Int8) ],
+                UiButtonSubcode::GET_CLICK =>
+                    &[ Output(Int8) ],
             },
             Opcode::UiDraw(subcode) => match subcode {
-                UiDrawSubcode::UPDATE => ".",
-                UiDrawSubcode::PIXEL => "bww.",
-                UiDrawSubcode::LINE => "bwwww.",
-                UiDrawSubcode::CIRCLE => "bwww.",
-                UiDrawSubcode::TEXT => "bwws.",
-                UiDrawSubcode::ICON => "bwwbd.",
-                UiDrawSubcode::PICTURE => "bwwd.",
-                UiDrawSubcode::VALUE => "bwwfbb.",
-                UiDrawSubcode::FILLRECT => "bwwww.",
-                UiDrawSubcode::RECT => "bwwww.",
-                UiDrawSubcode::NOTIFICATION => "bwwbbbsb.",
-                UiDrawSubcode::QUESTION => "bwwbbsb.b",
-                UiDrawSubcode::KEYBOARD => "bwwbbb.b+",
-                UiDrawSubcode::BROWSE => "bwwwwb.bb+",
-                UiDrawSubcode::VERTBAR => "bwwwwwww.",
-                UiDrawSubcode::INVERSERECT => "wwww.",
-                UiDrawSubcode::SELECT_FONT => "b.",
-                UiDrawSubcode::TOPLINE => "b.",
-                UiDrawSubcode::FILLWINDOW => "bww.",
-                UiDrawSubcode::DOTLINE => "bwwwwww.",
-                UiDrawSubcode::VIEW_VALUE => "bwwfbb.",
-                UiDrawSubcode::VIEW_UNIT => "bwwfbbbb.",
-                UiDrawSubcode::FILLCIRCLE => "bwww.",
-                UiDrawSubcode::STORE => "b.",
-                UiDrawSubcode::RESTORE => "b.",
-                UiDrawSubcode::ICON_QUESTION => "bwwbd.",
-                UiDrawSubcode::BMPFILE => "bwws.",
-                UiDrawSubcode::GRAPH_SETUP => "wwbwwfff.",
-                UiDrawSubcode::GRAPH_DRAW => "b.",
-                UiDrawSubcode::TEXTBOX => "wwwwsdb.w",
+                UiDrawSubcode::UPDATE =>
+                    &[  ],
+                UiDrawSubcode::PIXEL =>
+                    &[ Input(Int8), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::LINE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::CIRCLE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::TEXT =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(String(0)) ],
+                UiDrawSubcode::ICON =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int32) ],
+                UiDrawSubcode::PICTURE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int32) ],
+                UiDrawSubcode::VALUE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Float), Input(Int8), Input(Int8) ],
+                UiDrawSubcode::FILLRECT =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::RECT =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::NOTIFICATION =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(Int8), Input(String(0)), Input(Int8) ],
+                UiDrawSubcode::QUESTION =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(String(0)), Input(Int8), Output(Int8) ],
+                UiDrawSubcode::KEYBOARD =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array) ],
+                UiDrawSubcode::BROWSE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int8), Output(Int8), Output(Int8Array) ],
+                UiDrawSubcode::VERTBAR =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::INVERSERECT =>
+                    &[ Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::SELECT_FONT =>
+                    &[ Input(Int8) ],
+                UiDrawSubcode::TOPLINE =>
+                    &[ Input(Int8) ],
+                UiDrawSubcode::FILLWINDOW =>
+                    &[ Input(Int8), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::DOTLINE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::VIEW_VALUE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Float), Input(Int8), Input(Int8) ],
+                UiDrawSubcode::VIEW_UNIT =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Float), Input(Int8), Input(Int8), Input(Int8), Input(Int8) ],
+                UiDrawSubcode::FILLCIRCLE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16) ],
+                UiDrawSubcode::STORE =>
+                    &[ Input(Int8) ],
+                UiDrawSubcode::RESTORE =>
+                    &[ Input(Int8) ],
+                UiDrawSubcode::ICON_QUESTION =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int32) ],
+                UiDrawSubcode::BMPFILE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(String(0)) ],
+                UiDrawSubcode::GRAPH_SETUP =>
+                    &[ Input(Int16), Input(Int16), Input(Int8), Input(Int16), Input(Int16), Input(Float), Input(Float), Input(Float) ],
+                UiDrawSubcode::GRAPH_DRAW =>
+                    &[ Input(Int8) ],
+                UiDrawSubcode::TEXTBOX =>
+                    &[ Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(String(0)), Input(Int32), Input(Int8), Output(Int16) ],
             },
-            Opcode::Bp0 => ".",
-            Opcode::Bp1 => ".",
-            Opcode::Bp2 => ".",
-            Opcode::Bp3 => ".",
-            Opcode::BpSet => "wbd.",
+            Opcode::Bp0 =>
+                &[  ],
+            Opcode::Bp1 =>
+                &[  ],
+            Opcode::Bp2 =>
+                &[  ],
+            Opcode::Bp3 =>
+                &[  ],
+            Opcode::BpSet =>
+                &[ Input(Int16), Input(Int8), Input(Int32) ],
             Opcode::Math(subcode) => match subcode {
-                MathSubcode::EXP => "f.f",
-                MathSubcode::MOD => "ff.f",
-                MathSubcode::FLOOR => "f.f",
-                MathSubcode::CEIL => "f.f",
-                MathSubcode::ROUND => "f.f",
-                MathSubcode::ABS => "f.f",
-                MathSubcode::NEGATE => "f.f",
-                MathSubcode::SQRT => "f.f",
-                MathSubcode::LOG => "f.f",
-                MathSubcode::LN => "f.f",
-                MathSubcode::SIN => "f.f",
-                MathSubcode::COS => "f.f",
-                MathSubcode::TAN => "f.f",
-                MathSubcode::ASIN => "f.f",
-                MathSubcode::ACOS => "f.f",
-                MathSubcode::ATAN => "f.f",
-                MathSubcode::MOD8 => "bb.b",
-                MathSubcode::MOD16 => "ww.w",
-                MathSubcode::MOD32 => "dd.d",
-                MathSubcode::POW => "ff.f",
-                MathSubcode::TRUNC => "fb.f",
+                MathSubcode::EXP =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::MOD =>
+                    &[ Input(Float), Input(Float), Output(Float) ],
+                MathSubcode::FLOOR =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::CEIL =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::ROUND =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::ABS =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::NEGATE =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::SQRT =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::LOG =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::LN =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::SIN =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::COS =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::TAN =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::ASIN =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::ACOS =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::ATAN =>
+                    &[ Input(Float), Output(Float) ],
+                MathSubcode::MOD8 =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                MathSubcode::MOD16 =>
+                    &[ Input(Int16), Input(Int16), Output(Int16) ],
+                MathSubcode::MOD32 =>
+                    &[ Input(Int32), Input(Int32), Output(Int32) ],
+                MathSubcode::POW =>
+                    &[ Input(Float), Input(Float), Output(Float) ],
+                MathSubcode::TRUNC =>
+                    &[ Input(Float), Input(Int8), Output(Float) ],
             },
-            Opcode::Random => "ww.w",
-            Opcode::KeepAlive => "b.",
+            Opcode::Random =>
+                &[ Input(Int16), Input(Int16), Output(Int16) ],
+            Opcode::KeepAlive =>
+                &[ Input(Int8) ],
             Opcode::ComRead(subcode) => match subcode {
-                ComReadSubcode::COMMAND => "d.ddb",
+                ComReadSubcode::COMMAND =>
+                    &[ Input(Int32), Output(Int32), Output(Int32), Output(Int8) ],
             },
             Opcode::ComWrite(subcode) => match subcode {
-                ComWriteSubcode::REPLY => ".dd",
+                ComWriteSubcode::REPLY =>
+                    &[ Output(Int32), Output(Int32) ],
             },
             Opcode::Sound(subcode) => match subcode {
-                SoundSubcode::BREAK => ".",
-                SoundSubcode::TONE => "bww.",
-                SoundSubcode::PLAY => "bs.",
-                SoundSubcode::REPEAT => "bs.",
+                SoundSubcode::BREAK =>
+                    &[  ],
+                SoundSubcode::TONE =>
+                    &[ Input(Int8), Input(Int16), Input(Int16) ],
+                SoundSubcode::PLAY =>
+                    &[ Input(Int8), Input(String(0)) ],
+                SoundSubcode::REPEAT =>
+                    &[ Input(Int8), Input(String(0)) ],
             },
-            Opcode::SoundTest => ".b",
-            Opcode::SoundReady => ".",
-            Opcode::InputDeviceList => "bb+b.",
+            Opcode::SoundTest =>
+                &[ Output(Int8) ],
+            Opcode::SoundReady =>
+                &[  ],
+            Opcode::InputDeviceList =>
+                &[ Input(Int8), Input(Int8Array), Input(Int8) ],
             Opcode::InputDevice(subcode) => match subcode {
-                InputDeviceSubcode::GET_FORMAT => "bb.bbbb",
-                InputDeviceSubcode::CAL_MINMAX => "bbdd.",
-                InputDeviceSubcode::CAL_DEFAULT => "bb.",
-                InputDeviceSubcode::GET_TYPEMODE => "bb.bb",
-                InputDeviceSubcode::GET_SYMBOL => "bbb.b",
-                InputDeviceSubcode::CAL_MIN => "bbd.",
-                InputDeviceSubcode::CAL_MAX => "bbd.",
-                InputDeviceSubcode::SETUP => "bbbwbb.a",
-                InputDeviceSubcode::CLR_ALL => "b.",
-                InputDeviceSubcode::GET_RAW => "bb.d",
-                InputDeviceSubcode::GET_CONNECTION => "bb.b",
-                InputDeviceSubcode::STOP_ALL => "b.",
-                InputDeviceSubcode::GET_NAME => "bbb.s",
-                InputDeviceSubcode::GET_MODENAME => "bbbb.s",
-                InputDeviceSubcode::GET_FIGURES => "bb.bb",
-                InputDeviceSubcode::GET_CHANGES => "bb.b",
-                InputDeviceSubcode::CLR_CHANGES => "bb.",
-                InputDeviceSubcode::READY_PCT => "bbbbb.b+",
-                InputDeviceSubcode::READY_RAW => "bbbbb.d+",
-                InputDeviceSubcode::READY_SI => "bbbbb.f+",
-                InputDeviceSubcode::GET_MINMAX => "bb.ff",
-                InputDeviceSubcode::GET_BUMPS => "bb.f",
+                InputDeviceSubcode::GET_FORMAT =>
+                    &[ Input(Int8), Input(Int8), Output(Int8), Output(Int8), Output(Int8), Output(Int8) ],
+                InputDeviceSubcode::CAL_MINMAX =>
+                    &[ Input(Int8), Input(Int8), Input(Int32), Input(Int32) ],
+                InputDeviceSubcode::CAL_DEFAULT =>
+                    &[ Input(Int8), Input(Int8) ],
+                InputDeviceSubcode::GET_TYPEMODE =>
+                    &[ Input(Int8), Input(Int8), Output(Int8), Output(Int8) ],
+                InputDeviceSubcode::GET_SYMBOL =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8) ],
+                InputDeviceSubcode::CAL_MIN =>
+                    &[ Input(Int8), Input(Int8), Input(Int32) ],
+                InputDeviceSubcode::CAL_MAX =>
+                    &[ Input(Int8), Input(Int8), Input(Int32) ],
+                InputDeviceSubcode::SETUP =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int16), Input(Int8), Input(Int8), Output(Handle) ],
+                InputDeviceSubcode::CLR_ALL =>
+                    &[ Input(Int8) ],
+                InputDeviceSubcode::GET_RAW =>
+                    &[ Input(Int8), Input(Int8), Output(Int32) ],
+                InputDeviceSubcode::GET_CONNECTION =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                InputDeviceSubcode::STOP_ALL =>
+                    &[ Input(Int8) ],
+                InputDeviceSubcode::GET_NAME =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(String(0)) ],
+                InputDeviceSubcode::GET_MODENAME =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(String(0)) ],
+                InputDeviceSubcode::GET_FIGURES =>
+                    &[ Input(Int8), Input(Int8), Output(Int8), Output(Int8) ],
+                InputDeviceSubcode::GET_CHANGES =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                InputDeviceSubcode::CLR_CHANGES =>
+                    &[ Input(Int8), Input(Int8) ],
+                InputDeviceSubcode::READY_PCT =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array) ],
+                InputDeviceSubcode::READY_RAW =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array) ],
+                InputDeviceSubcode::READY_SI =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(FloatArray) ],
+                InputDeviceSubcode::GET_MINMAX =>
+                    &[ Input(Int8), Input(Int8), Output(Float), Output(Float) ],
+                InputDeviceSubcode::GET_BUMPS =>
+                    &[ Input(Int8), Input(Int8), Output(Float) ],
             },
-            Opcode::InputRead => "bbbb.b",
-            Opcode::InputTest => "bb.b",
-            Opcode::InputReady => "bb.",
-            Opcode::InputReadSi => "bbbb.f",
-            Opcode::InputReadExt => "bbbbbb.d+",
-            Opcode::InputWrite => "bbbb+.",
-            Opcode::OutputSetType => "bbb.",
-            Opcode::OutputReset => "bb.",
-            Opcode::OutputStop => "bbb.",
-            Opcode::OutputPower => "bbb.",
-            Opcode::OutputSpeed => "bbb.",
-            Opcode::OutputStart => "bb.",
-            Opcode::OutputPolarity => "bbb.",
-            Opcode::OutputRead => "bbbd.",
-            Opcode::OutputTest => "bb.b",
-            Opcode::OutputReady => "bb.",
-            Opcode::OutputStepPower => "bbbdddb.",
-            Opcode::OutputTimePower => "bbbdddb.",
-            Opcode::OutputStepSpeed => "bbbdddb.",
-            Opcode::OutputTimeSpeed => "bbbdddb.",
-            Opcode::OutputStepSync => "bbbwdb.",
-            Opcode::OutputTimeSync => "bbbwdb.",
-            Opcode::OutputClrCount => "bb.",
-            Opcode::OutputGetCount => "bbd.",
-            Opcode::OutputPrgStop => ".",
+            Opcode::InputRead =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::InputTest =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::InputReady =>
+                &[ Input(Int8), Input(Int8) ],
+            Opcode::InputReadSi =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Float) ],
+            Opcode::InputReadExt =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array) ],
+            Opcode::InputWrite =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8Array) ],
+            Opcode::OutputSetType =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::OutputReset =>
+                &[ Input(Int8), Input(Int8) ],
+            Opcode::OutputStop =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::OutputPower =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::OutputSpeed =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::OutputStart =>
+                &[ Input(Int8), Input(Int8) ],
+            Opcode::OutputPolarity =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::OutputRead =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int32) ],
+            Opcode::OutputTest =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::OutputReady =>
+                &[ Input(Int8), Input(Int8) ],
+            Opcode::OutputStepPower =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int32), Input(Int32), Input(Int32), Input(Int8) ],
+            Opcode::OutputTimePower =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int32), Input(Int32), Input(Int32), Input(Int8) ],
+            Opcode::OutputStepSpeed =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int32), Input(Int32), Input(Int32), Input(Int8) ],
+            Opcode::OutputTimeSpeed =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int32), Input(Int32), Input(Int32), Input(Int8) ],
+            Opcode::OutputStepSync =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int16), Input(Int32), Input(Int8) ],
+            Opcode::OutputTimeSync =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int16), Input(Int32), Input(Int8) ],
+            Opcode::OutputClrCount =>
+                &[ Input(Int8), Input(Int8) ],
+            Opcode::OutputGetCount =>
+                &[ Input(Int8), Input(Int8), Input(Int32) ],
+            Opcode::OutputPrgStop =>
+                &[  ],
             Opcode::File(subcode) => match subcode {
-                FileSubcode::OPEN_APPEND => "s.h",
-                FileSubcode::OPEN_READ => "s.hd",
-                FileSubcode::OPEN_WRITE => "s.h",
-                FileSubcode::READ_VALUE => "hb.f",
-                FileSubcode::WRITE_VALUE => "h.bfbb",
-                FileSubcode::READ_TEXT => "hbb.b+",
-                FileSubcode::WRITE_TEXT => "hbs.",
-                FileSubcode::CLOSE => "h.",
-                FileSubcode::LOAD_IMAGE => "ws.dd",
-                FileSubcode::GET_HANDLE => "s.hb",
-                FileSubcode::MAKE_FOLDER => "s.b",
-                FileSubcode::GET_POOL => "s.hd",
-                FileSubcode::SET_LOG_SYNC_TIME => "dd.",
-                FileSubcode::GET_FOLDERS => "s.b",
-                FileSubcode::GET_LOG_SYNC_TIME => "dd.",
-                FileSubcode::GET_SUBFOLDER_NAME => "sbb.b+",
-                FileSubcode::WRITE_LOG => "hdbf.",
-                FileSubcode::CLOSE_LOG => "hs.",
-                FileSubcode::GET_IMAGE => "swb.d",
-                FileSubcode::GET_ITEM => "ss.b",
-                FileSubcode::GET_CACHE_FILES => ".b",
-                FileSubcode::PUT_CACHE_FILE => "s.",
-                FileSubcode::GET_CACHE_FILE => "bb.b+",
-                FileSubcode::DEL_CACHE_FILE => "bb.b+",
-                FileSubcode::DEL_SUBFOLDER => "sb.",
-                FileSubcode::GET_LOG_NAME => "bs.",
-                FileSubcode::OPEN_LOG => "sddddds.h",
-                FileSubcode::READ_BYTES => "hw.b+",
-                FileSubcode::WRITE_BYTES => "hwb+.",
-                FileSubcode::REMOVE => "h.",
-                FileSubcode::MOVE => "ss.",
+                FileSubcode::OPEN_APPEND =>
+                    &[ Input(String(0)), Output(Handle) ],
+                FileSubcode::OPEN_READ =>
+                    &[ Input(String(0)), Output(Handle), Output(Int32) ],
+                FileSubcode::OPEN_WRITE =>
+                    &[ Input(String(0)), Output(Handle) ],
+                FileSubcode::READ_VALUE =>
+                    &[ Input(Handle), Input(Int8), Output(Float) ],
+                FileSubcode::WRITE_VALUE =>
+                    &[ Input(Handle), Output(Int8), Output(Float), Output(Int8), Output(Int8) ],
+                FileSubcode::READ_TEXT =>
+                    &[ Input(Handle), Input(Int8), Input(Int8), Output(Int8Array) ],
+                FileSubcode::WRITE_TEXT =>
+                    &[ Input(Handle), Input(Int8), Input(String(0)) ],
+                FileSubcode::CLOSE =>
+                    &[ Input(Handle) ],
+                FileSubcode::LOAD_IMAGE =>
+                    &[ Input(Int16), Input(String(0)), Output(Int32), Output(Int32) ],
+                FileSubcode::GET_HANDLE =>
+                    &[ Input(String(0)), Output(Handle), Output(Int8) ],
+                FileSubcode::MAKE_FOLDER =>
+                    &[ Input(String(0)), Output(Int8) ],
+                FileSubcode::GET_POOL =>
+                    &[ Input(String(0)), Output(Handle), Output(Int32) ],
+                FileSubcode::SET_LOG_SYNC_TIME =>
+                    &[ Input(Int32), Input(Int32) ],
+                FileSubcode::GET_FOLDERS =>
+                    &[ Input(String(0)), Output(Int8) ],
+                FileSubcode::GET_LOG_SYNC_TIME =>
+                    &[ Input(Int32), Input(Int32) ],
+                FileSubcode::GET_SUBFOLDER_NAME =>
+                    &[ Input(String(0)), Input(Int8), Input(Int8), Output(Int8Array) ],
+                FileSubcode::WRITE_LOG =>
+                    &[ Input(Handle), Input(Int32), Input(Int8), Input(Float) ],
+                FileSubcode::CLOSE_LOG =>
+                    &[ Input(Handle), Input(String(0)) ],
+                FileSubcode::GET_IMAGE =>
+                    &[ Input(String(0)), Input(Int16), Input(Int8), Output(Int32) ],
+                FileSubcode::GET_ITEM =>
+                    &[ Input(String(0)), Input(String(0)), Output(Int8) ],
+                FileSubcode::GET_CACHE_FILES =>
+                    &[ Output(Int8) ],
+                FileSubcode::PUT_CACHE_FILE =>
+                    &[ Input(String(0)) ],
+                FileSubcode::GET_CACHE_FILE =>
+                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                FileSubcode::DEL_CACHE_FILE =>
+                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                FileSubcode::DEL_SUBFOLDER =>
+                    &[ Input(String(0)), Input(Int8) ],
+                FileSubcode::GET_LOG_NAME =>
+                    &[ Input(Int8), Input(String(0)) ],
+                FileSubcode::OPEN_LOG =>
+                    &[ Input(String(0)), Input(Int32), Input(Int32), Input(Int32), Input(Int32), Input(Int32), Input(String(0)), Output(Handle) ],
+                FileSubcode::READ_BYTES =>
+                    &[ Input(Handle), Input(Int16), Output(Int8Array) ],
+                FileSubcode::WRITE_BYTES =>
+                    &[ Input(Handle), Input(Int16), Input(Int8Array) ],
+                FileSubcode::REMOVE =>
+                    &[ Input(Handle) ],
+                FileSubcode::MOVE =>
+                    &[ Input(String(0)), Input(String(0)) ],
             },
             Opcode::Array(subcode) => match subcode {
-                ArraySubcode::DELETE => "h.",
-                ArraySubcode::CREATE8 => "d.h",
-                ArraySubcode::CREATE16 => "d.h",
-                ArraySubcode::CREATE32 => "d.h",
-                ArraySubcode::CREATEF => "d.h",
-                ArraySubcode::RESIZE => "hd.",
-                ArraySubcode::FILL => "hv.",
-                ArraySubcode::COPY => "hh.",
-                ArraySubcode::INIT8 => "hddb+.",
-                ArraySubcode::INIT16 => "hddw+.",
-                ArraySubcode::INIT32 => "hddd+.",
-                ArraySubcode::INITF => "hddf+.",
-                ArraySubcode::SIZE => "h.d",
-                ArraySubcode::READ_CONTENT => "Whdd.b+",
-                ArraySubcode::WRITE_CONTENT => "whddb+",
-                ArraySubcode::READ_SIZE => "wh.d",
+                ArraySubcode::DELETE =>
+                    &[ Input(Handle) ],
+                ArraySubcode::CREATE8 =>
+                    &[ Input(Int32), Output(Handle) ],
+                ArraySubcode::CREATE16 =>
+                    &[ Input(Int32), Output(Handle) ],
+                ArraySubcode::CREATE32 =>
+                    &[ Input(Int32), Output(Handle) ],
+                ArraySubcode::CREATEF =>
+                    &[ Input(Int32), Output(Handle) ],
+                ArraySubcode::RESIZE =>
+                    &[ Input(Handle), Input(Int32) ],
+                ArraySubcode::FILL =>
+                    &[ Input(Handle), Input(Int32) ],
+                ArraySubcode::COPY =>
+                    &[ Input(Handle), Input(Handle) ],
+                ArraySubcode::INIT8 =>
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int8Array) ],
+                ArraySubcode::INIT16 =>
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int16Array) ],
+                ArraySubcode::INIT32 =>
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int32Array) ],
+                ArraySubcode::INITF =>
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(FloatArray) ],
+                ArraySubcode::SIZE =>
+                    &[ Input(Handle), Output(Int32) ],
+                ArraySubcode::READ_CONTENT =>
+                    &[ Input(Handle), Input(Int32), Input(Int32), Output(Int8Array) ],
+                ArraySubcode::WRITE_CONTENT =>
+                    &[ Input(Int16), Input(Handle), Input(Int32), Input(Int32), Input(Int8Array) ],
+                ArraySubcode::READ_SIZE =>
+                    &[ Input(Int16), Input(Handle), Output(Int32) ],
             },
-            Opcode::ArrayWrite => "hdv.",
-            Opcode::ArrayRead => "hdv.",
-            Opcode::ArrayAppend => "hv.",
-            Opcode::MemoryUsage => ".dd",
+            Opcode::ArrayWrite =>
+                &[ Input(Handle), Input(Int32), Input(Int32) ],
+            Opcode::ArrayRead =>
+                &[ Input(Handle), Input(Int32), Input(Int32) ],
+            Opcode::ArrayAppend =>
+                &[ Input(Handle), Input(Int32) ],
+            Opcode::MemoryUsage =>
+                &[ Output(Int32), Output(Int32) ],
             Opcode::Filename(subcode) => match subcode {
-                FilenameSubcode::EXIST => "s.b",
-                FilenameSubcode::TOTALSIZE => "s.dd",
-                FilenameSubcode::SPLIT => "sbs.b+b+",
-                FilenameSubcode::MERGE => "sssb.b+",
-                FilenameSubcode::CHECK => "s.b",
-                FilenameSubcode::PACK => "s.",
-                FilenameSubcode::UNPACK => "s.",
-                FilenameSubcode::GET_FOLDERNAME => "b.b+",
+                FilenameSubcode::EXIST =>
+                    &[ Input(String(0)), Output(Int8) ],
+                FilenameSubcode::TOTALSIZE =>
+                    &[ Input(String(0)), Output(Int32), Output(Int32) ],
+                FilenameSubcode::SPLIT =>
+                    &[ Input(String(0)), Input(Int8), Input(String(0)), Output(Int8Array), Output(Int8Array) ],
+                FilenameSubcode::MERGE =>
+                    &[ Input(String(0)), Input(String(0)), Input(String(0)), Input(Int8), Output(Int8Array) ],
+                FilenameSubcode::CHECK =>
+                    &[ Input(String(0)), Output(Int8) ],
+                FilenameSubcode::PACK =>
+                    &[ Input(String(0)) ],
+                FilenameSubcode::UNPACK =>
+                    &[ Input(String(0)) ],
+                FilenameSubcode::GET_FOLDERNAME =>
+                    &[ Input(Int8), Output(Int8Array) ],
             },
-            Opcode::Read8 => "b+b.b",
-            Opcode::Read16 => "w+b.w",
-            Opcode::Read32 => "d+b.d",
-            Opcode::Readf => "f+b.f",
-            Opcode::Write8 => "bbbl",
-            Opcode::Write16 => "wbw.",
-            Opcode::Write32 => "dbdl",
-            Opcode::Writef => "fbf.",
-            Opcode::ComReady => "bb.",
+            Opcode::Read8 =>
+                &[ Input(Int8Array), Input(Int8), Output(Int8) ],
+            Opcode::Read16 =>
+                &[ Input(Int16Array), Input(Int8), Output(Int16) ],
+            Opcode::Read32 =>
+                &[ Input(Int32Array), Input(Int8), Output(Int32) ],
+            Opcode::Readf =>
+                &[ Input(FloatArray), Input(Int8), Output(Float) ],
+            Opcode::Write8 =>
+                &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+            Opcode::Write16 =>
+                &[ Input(Int16), Input(Int8), Output(Int16Array) ],
+            Opcode::Write32 =>
+                &[ Input(Int32), Input(Int8), Output(Int32Array) ],
+            Opcode::Writef =>
+                &[ Input(Float), Input(Int8), Output(FloatArray) ],
+            Opcode::ComReady =>
+                &[ Input(Int8), Input(Int8) ],
             Opcode::ComGet(subcode) => match subcode {
-                ComGetSubcode::GET_ON_OFF => "b.b",
-                ComGetSubcode::GET_VISIBLE => "b.b",
-                ComGetSubcode::GET_RESULT => "bb.b",
-                ComGetSubcode::GET_PIN => "bsb.b",
-                ComGetSubcode::SEARCH_ITEMS => "b.b",
-                ComGetSubcode::SEARCH_ITEM => "bbb.b+bbbb",
-                ComGetSubcode::FAVOUR_ITEMS => "b.b",
-                ComGetSubcode::FAVOUR_ITEM => "bbb.b+bbb",
-                ComGetSubcode::GET_ID => "bb.b+",
-                ComGetSubcode::GET_BRICKNAME => "b.b+",
-                ComGetSubcode::GET_NETWORK => "bb.b+b+b+",
-                ComGetSubcode::GET_PRESENT => "b.b",
-                ComGetSubcode::GET_ENCRYPT => "bb.b",
-                ComGetSubcode::GET_INCOMING => "bb.b+",
+                ComGetSubcode::GET_ON_OFF =>
+                    &[ Input(Int8), Output(Int8) ],
+                ComGetSubcode::GET_VISIBLE =>
+                    &[ Input(Int8), Output(Int8) ],
+                ComGetSubcode::GET_RESULT =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                ComGetSubcode::GET_PIN =>
+                    &[ Input(Int8), Input(String(0)), Input(Int8), Output(Int8) ],
+                ComGetSubcode::SEARCH_ITEMS =>
+                    &[ Input(Int8), Output(Int8) ],
+                ComGetSubcode::SEARCH_ITEM =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array), Output(Int8), Output(Int8), Output(Int8), Output(Int8) ],
+                ComGetSubcode::FAVOUR_ITEMS =>
+                    &[ Input(Int8), Output(Int8) ],
+                ComGetSubcode::FAVOUR_ITEM =>
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array), Output(Int8), Output(Int8), Output(Int8) ],
+                ComGetSubcode::GET_ID =>
+                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                ComGetSubcode::GET_BRICKNAME =>
+                    &[ Input(Int8), Output(Int8Array) ],
+                ComGetSubcode::GET_NETWORK =>
+                    &[ Input(Int8), Input(Int8), Output(Int8Array), Output(Int8Array), Output(Int8Array) ],
+                ComGetSubcode::GET_PRESENT =>
+                    &[ Input(Int8), Output(Int8) ],
+                ComGetSubcode::GET_ENCRYPT =>
+                    &[ Input(Int8), Input(Int8), Output(Int8) ],
+                ComGetSubcode::GET_INCOMING =>
+                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
             },
             Opcode::ComSet(subcode) => match subcode {
-                ComSetSubcode::SET_ON_OFF => "bb.",
-                ComSetSubcode::SET_VISIBLE => "bb.",
-                ComSetSubcode::SET_SEARCH => "bb.",
-                ComSetSubcode::SET_PIN => "bss.",
-                ComSetSubcode::SET_PASSKEY => "bb.",
-                ComSetSubcode::SET_CONNECTION => "bsb.",
-                ComSetSubcode::SET_BRICKNAME => "s.",
-                ComSetSubcode::SET_MOVEUP => "bb.",
-                ComSetSubcode::SET_MOVEDOWN => "bb.",
-                ComSetSubcode::SET_ENCRYPT => "bbb.",
-                ComSetSubcode::SET_SSID => "bs.",
+                ComSetSubcode::SET_ON_OFF =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_VISIBLE =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_SEARCH =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_PIN =>
+                    &[ Input(Int8), Input(String(0)), Input(String(0)) ],
+                ComSetSubcode::SET_PASSKEY =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_CONNECTION =>
+                    &[ Input(Int8), Input(String(0)), Input(Int8) ],
+                ComSetSubcode::SET_BRICKNAME =>
+                    &[ Input(String(0)) ],
+                ComSetSubcode::SET_MOVEUP =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_MOVEDOWN =>
+                    &[ Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_ENCRYPT =>
+                    &[ Input(Int8), Input(Int8), Input(Int8) ],
+                ComSetSubcode::SET_SSID =>
+                    &[ Input(Int8), Input(String(0)) ],
             },
-            Opcode::ComTest => "bb.b",
-            Opcode::MailboxOpen => "bbbbb.b",
-            Opcode::MailboxWrite => "sbbbb?.",
-            Opcode::MailboxRead => "bbb.?",
-            Opcode::MailboxTest => "b.b",
-            Opcode::MailboxReady => "b.",
-            Opcode::MailboxClose => "b.",
+            Opcode::ComTest =>
+                &[ Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::MailboxOpen =>
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int8) ],
+            Opcode::MailboxWrite =>
+                &[ Input(String(0)), Input(Int8), Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::MailboxRead =>
+                &[ Input(Int8), Input(Int8), Input(Int8) ],
+            Opcode::MailboxTest =>
+                &[ Input(Int8), Output(Int8) ],
+            Opcode::MailboxReady =>
+                &[ Input(Int8) ],
+            Opcode::MailboxClose =>
+                &[ Input(Int8) ],
         }
     }
 }

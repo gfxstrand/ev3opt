@@ -18,7 +18,7 @@ ProgramInfo    , GET_STATUS        , 22   , w.b
 ProgramInfo    , GET_SPEED         , 23   , w.d
 ProgramInfo    , GET_PRGRESULT     , 24   , w.b
 ProgramInfo    , SET_INSTR         , 25   ,
-Label          ,                   , 0x0D , u.
+Label          ,                   , 0x0D , b.
 Probe          ,                   , 0x0E , wwdd.
 Do             ,                   , 0x0F , wdd.
 Add8           ,                   , 0x10 , bb.b
@@ -152,7 +152,7 @@ UiFlush        ,                   , 0x80 , .
 UiRead         ,                   , 0x81 ,
 UiRead         , GET_VBATT         , 1    , .f
 UiRead         , GET_IBATT         , 2    , .f
-UiRead         , GET_OS_VERS       , 3    , u.b+
+UiRead         , GET_OS_VERS       , 3    , b.b+
 UiRead         , GET_EVENT         , 4    , .b
 UiRead         , GET_TBATT         , 5    , .f
 UiRead         , GET_IINT          , 6    ,
@@ -304,7 +304,7 @@ InputDevice    , GET_TYPEMODE      , 5    , bb.bb
 InputDevice    , GET_SYMBOL        , 6    , bbb.b
 InputDevice    , CAL_MIN           , 7    , bbd.
 InputDevice    , CAL_MAX           , 8    , bbd.
-InputDevice    , SETUP             , 9    , bbbwbb.a
+InputDevice    , SETUP             , 9    , bbbwbb.h
 InputDevice    , CLR_ALL           , 10   , b.
 InputDevice    , GET_RAW           , 11   , bb.d
 InputDevice    , GET_CONNECTION    , 12   , bb.b
@@ -415,10 +415,10 @@ Read8          ,                   , 0xC8 , b+b.b
 Read16         ,                   , 0xC9 , w+b.w
 Read32         ,                   , 0xCA , d+b.d
 Readf          ,                   , 0xCB , f+b.f
-Write8         ,                   , 0xCC , bbbl
-Write16        ,                   , 0xCD , wbw.
-Write32        ,                   , 0xCE , dbdl
-Writef         ,                   , 0xCF , fbf.
+Write8         ,                   , 0xCC , bb.b+
+Write16        ,                   , 0xCD , wb.w+
+Write32        ,                   , 0xCE , db.d+
+Writef         ,                   , 0xCF , fb.f+
 ComReady       ,                   , 0xD0 , bb.
 ComReaddata    ,                   , 0xD1 ,
 ComWritedata   ,                   , 0xD2 ,
