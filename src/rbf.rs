@@ -80,6 +80,18 @@ fn read_le_u32(r: &mut dyn io::Read) -> io::Result<u32> {
     Ok(u32::from_le_bytes(buf))
 }
 
+fn write_u8(w: &mut dyn io::Write, u: u8) -> io::Result<()> {
+    w.write_all(&[u])
+}
+
+fn write_le_u16(w: &mut dyn io::Write, u: u16) -> io::Result<()> {
+    w.write_all(&u.to_le_bytes())
+}
+
+fn write_le_u32(w: &mut dyn io::Write, u: u32) -> io::Result<()> {
+    w.write_all(&u.to_le_bytes())
+}
+
 fn read_param_imm_i32(r: &mut dyn io::Read, enc: u8) -> io::Result<i32> {
     match enc {
         PRIMPAR_1_BYTE => Ok(read_u8(r)? as i8 as i32),
@@ -155,34 +167,32 @@ fn read_param_value(r: &mut dyn io::Read) -> io::Result<ir::ParamValue> {
 
 fn write_param_imm_i32(w: &mut dyn io::Write, header: u8, val: i32) -> io::Result<()> {
     if val == sign_extend_i32(val, 6) {
-        w.write(&[header | ((val as u8) & PRIMPAR_VALUE)])?;
+        write_u8(w, header | ((val as u8) & PRIMPAR_VALUE))
     } else if val == sign_extend_i32(val, 8) {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_1_BYTE])?;
-        w.write(&[val as u8])?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_1_BYTE)?;
+        write_u8(w, val as u8)
     } else if val == sign_extend_i32(val, 16) {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_2_BYTES])?;
-        w.write(&(val as i16).to_le_bytes())?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_2_BYTES)?;
+        write_le_u16(w, val as u16)
     } else {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_4_BYTES])?;
-        w.write(&val.to_le_bytes())?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_4_BYTES)?;
+        write_le_u32(w, val as u32)
     }
-    Ok(())
 }
 
 fn write_param_imm_u32(w: &mut dyn io::Write, header: u8, val: u32) -> io::Result<()> {
     if val == truncate_u32(val, 5) {
-        w.write(&[header | ((val as u8) & PRIMPAR_INDEX)])?;
+        write_u8(w, header | ((val as u8) & PRIMPAR_INDEX))
     } else if val == truncate_u32(val, 8) {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_1_BYTE])?;
-        w.write(&[val as u8])?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_1_BYTE)?;
+        write_u8(w, val as u8)
     } else if val == truncate_u32(val, 16) {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_2_BYTES])?;
-        w.write(&(val as i16).to_le_bytes())?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_2_BYTES)?;
+        write_le_u16(w, val as u16)
     } else {
-        w.write(&[header | PRIMPAR_LONG | PRIMPAR_4_BYTES])?;
-        w.write(&val.to_le_bytes())?;
+        write_u8(w, header | PRIMPAR_LONG | PRIMPAR_4_BYTES)?;
+        write_le_u32(w, val)
     }
-    Ok(())
 }
 
 pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Result<()> {
@@ -261,7 +271,7 @@ fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) ->
 fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Result<()> {
     w.write(&[instr.op.to_u8()])?;
     if instr.op.has_subcode() {
-        w.write(&[instr.op.get_subcode_as_u8()])?;
+        write_u8(w, instr.op.get_subcode_as_u8())?;
     }
     for param in &instr.params {
         write_param_value(w, &param.value)?;
