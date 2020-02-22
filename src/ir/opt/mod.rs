@@ -22,7 +22,11 @@
 
 use crate::ir;
 
+mod blocks;
+
 pub fn optimize_obj(obj: &mut ir::Object) {
+    blocks::flat_to_blocks_obj(obj);
+    blocks::blocks_to_flat_obj(obj);
 }
 
 pub fn optimize(image: &mut ir::Image) {

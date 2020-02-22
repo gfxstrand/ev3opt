@@ -89,6 +89,7 @@ pub enum ParamType {
     Output(DataType),
     Offset,
     IP,
+    BlockID,
 }
 
 impl ParamType {
@@ -108,6 +109,7 @@ impl fmt::Display for ParamType {
             ParamType::Output(t) => write!(f, ">{}", t),
             ParamType::Offset => write!(f, ":offset"),
             ParamType::IP => write!(f, ":IP"),
+            ParamType::BlockID => write!(f, ":block"),
         }
     }
 }
@@ -122,6 +124,19 @@ pub enum ParamValue {
 pub struct Parameter {
     pub param_type: ParamType,
     pub value: ParamValue,
+}
+
+impl Parameter {
+    pub fn to_i32(&self) -> i32 {
+        match self.value {
+            ParamValue::Constant(x) => x,
+            _ => panic!("Not a constant"),
+        }
+    }
+
+    pub fn to_u32(&self) -> u32 {
+        self.to_i32() as u32
+    }
 }
 
 impl fmt::Display for Parameter {
@@ -157,6 +172,30 @@ impl fmt::Display for Instruction {
     }
 }
 
+pub struct Block {
+    pub id: u32,
+    pub instrs: Vec<Instruction>,
+}
+
+impl Block {
+    pub fn new(id: u32) -> Block {
+        Block {
+            id: id,
+            instrs: vec![],
+        }
+    }
+}
+
+impl fmt::Display for Block {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "    block {} {{\n", self.id)?;
+        for instr in self.instrs.iter() {
+            write!(f, "        {}\n", instr)?;
+        }
+        write!(f, "    }}")
+    }
+}
+
 pub struct Object {
     pub owner_id: u16,
     pub trigger_count: u16,
@@ -165,6 +204,7 @@ pub struct Object {
 
     pub params: Vec<ParamType>,
     pub instrs: Vec<Instruction>,
+    pub blocks: Vec<Block>,
 }
 
 impl Object {
@@ -178,6 +218,7 @@ impl Object {
             last_ip: 0,
             params: vec![],
             instrs: vec![],
+            blocks: vec![],
         }
     }
 }
@@ -204,6 +245,9 @@ impl fmt::Display for Object {
         write!(f, "\n")?;
         for instr in self.instrs.iter() {
             write!(f, "    {}\n", instr)?;
+        }
+        for block in self.blocks.iter() {
+            write!(f, "{}\n", block)?;
         }
         write!(f, "}}")
     }
