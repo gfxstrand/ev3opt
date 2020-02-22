@@ -23,6 +23,7 @@
 use crate::ir;
 
 mod blocks;
+mod memory;
 
 pub fn optimize_obj(obj: &mut ir::Object) {
     blocks::flat_to_blocks_obj(obj);
@@ -30,6 +31,7 @@ pub fn optimize_obj(obj: &mut ir::Object) {
 }
 
 pub fn optimize(image: &mut ir::Image) {
+    memory::global_to_local(image);
     for obj in image.objects.iter_mut() {
         optimize_obj(obj);
     }

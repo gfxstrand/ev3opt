@@ -59,6 +59,30 @@ impl DataType {
             _ => *self,
         }
     }
+
+    pub fn size(&self) -> u32 {
+        match self {
+            DataType::Int8 => 1,
+            DataType::Int16 => 2,
+            DataType::Int32 => 4,
+            DataType::Float => 4,
+            DataType::Handle => 4,
+            DataType::Int8Array => u32::max_value(),
+            DataType::Int16Array => u32::max_value(),
+            DataType::Int32Array => u32::max_value(),
+            DataType::FloatArray => u32::max_value(),
+            DataType::String(len) => {
+                if *len == 0 {
+                    u32::max_value()
+                } else {
+                    *len as u32
+                }
+            },
+        }
+    }
+    pub fn align(&self) -> u32 {
+        self.without_array().size()
+    }
 }
 
 impl fmt::Display for DataType {
