@@ -2335,13 +2335,13 @@ impl Opcode {
             Opcode::MoveF_F =>
                 &[ Input(Float), Output(Float) ],
             Opcode::Jr =>
-                &[ Input(Offset) ],
+                &[ Offset ],
             Opcode::JrFalse =>
-                &[ Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Offset ],
             Opcode::JrTrue =>
-                &[ Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Offset ],
             Opcode::JrNan =>
-                &[ Input(Float), Input(Offset) ],
+                &[ Input(Float), Offset ],
             Opcode::CpLt8 =>
                 &[ Input(Int8), Input(Int8), Output(Int8) ],
             Opcode::CpLt16 =>
@@ -2407,53 +2407,53 @@ impl Opcode {
             Opcode::NoteToFreq =>
                 &[ Input(Int8), Output(Int16) ],
             Opcode::JrLt8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrLt16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrLt32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrLtf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::JrGt8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrGt16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrGt32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrGtf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::JrEq8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrEq16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrEq32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrEqf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::JrNeq8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrNeq16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrNeq32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrNeqf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::JrLteq8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrLteq16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrLteq32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrLteqf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::JrGteq8 =>
-                &[ Input(Int8), Input(Int8), Input(Offset) ],
+                &[ Input(Int8), Input(Int8), Offset ],
             Opcode::JrGteq16 =>
-                &[ Input(Int16), Input(Int16), Input(Offset) ],
+                &[ Input(Int16), Input(Int16), Offset ],
             Opcode::JrGteq32 =>
-                &[ Input(Int32), Input(Int32), Input(Offset) ],
+                &[ Input(Int32), Input(Int32), Offset ],
             Opcode::JrGteqf =>
-                &[ Input(Float), Input(Float), Input(Offset) ],
+                &[ Input(Float), Input(Float), Offset ],
             Opcode::Info(subcode) => match subcode {
                 InfoSubcode::SET_ERROR =>
                     &[ Input(Int8) ],

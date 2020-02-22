@@ -37,8 +37,6 @@ pub enum DataType {
     FloatArray,
     String(u8), /* Strings may have a size; 0 for unknown */
     Handle,
-    Offset,
-    IP,
 }
 
 impl DataType {
@@ -83,8 +81,6 @@ impl fmt::Display for DataType {
                     write!(f, "str({})", len)
                 },
             DataType::Handle => write!(f, "handle"),
-            DataType::Offset => write!(f, "offset"),
-            DataType::IP => write!(f, "IP"),
         }
     }
 }
@@ -93,6 +89,8 @@ impl fmt::Display for DataType {
 pub enum ParamType {
     Input(DataType),
     Output(DataType),
+    Offset,
+    IP,
 }
 
 impl ParamType {
@@ -100,6 +98,7 @@ impl ParamType {
         match self {
             ParamType::Input(t) => *t,
             ParamType::Output(t) => *t,
+            _ => panic!("Cannot get a data type from this param type"),
         }
     }
 }
@@ -109,6 +108,8 @@ impl fmt::Display for ParamType {
         match self {
             ParamType::Input(t) => write!(f, "<{}", t),
             ParamType::Output(t) => write!(f, ">{}", t),
+            ParamType::Offset => write!(f, ":offset"),
+            ParamType::IP => write!(f, ":IP"),
         }
     }
 }

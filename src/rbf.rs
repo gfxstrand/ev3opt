@@ -402,15 +402,13 @@ fn write_instruction<W: io::Write + io::Seek>(w: &mut W,
     }
     let mut first_param = true;
     for param in instr.params.iter() {
-        if let ir::ParamType::Input(data_type) = param.param_type {
-            if let ir::DataType::IP = data_type {
-                if let ir::ParamValue::Constant(ip) = param.value {
-                    assert!(ip >= 0);
-                    relocs.write_param_reloc(w, instr.ip, ip as u32)?;
-                    continue;
-                } else {
-                    panic!("IPs must be constants");
-                }
+        if let ir::ParamType::IP = param.param_type {
+            if let ir::ParamValue::Constant(ip) = param.value {
+                assert!(ip >= 0);
+                relocs.write_param_reloc(w, instr.ip, ip as u32)?;
+                continue;
+            } else {
+                panic!("IPs must be constants");
             }
         }
         write_param_value(w, &param.value)?;
@@ -449,6 +447,7 @@ fn write_call_param_type(w: &mut dyn io::Write, param: &ir::ParamType) -> io::Re
     let inout = match param {
         ir::ParamType::Input(_) => CALLPAR_IN,
         ir::ParamType::Output(_) => CALLPAR_OUT,
+        _ => panic!("Invalid parameter type for call instruction"),
     };
     match param.data_type() {
         ir::DataType::Int8 => write_u8(w, inout | CALLPAR_DATA8),
@@ -536,17 +535,14 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
 
             /* Turn any jump offsets into IPs */
             for param in instr.params.iter_mut() {
-                if let ir::ParamType::Input(data_type) = param.param_type {
-                    if let ir::DataType::Offset = data_type {
-                        if let ir::ParamValue::Constant(offset) = param.value {
-                            let target = rel_offset + offset;
-                            param.param_type =
-                                ir::ParamType::Input(ir::DataType::IP);
-                            param.value = ir::ParamValue::Constant(target);
-                        } else {
-                            return Err(io::Error::new(io::ErrorKind::Other,
-                                       "Jump offsets must be constants"));
-                        }
+                if let ir::ParamType::Offset = param.param_type {
+                    if let ir::ParamValue::Constant(offset) = param.value {
+                        let target = rel_offset + offset;
+                        param.param_type = ir::ParamType::IP;
+                        param.value = ir::ParamValue::Constant(target);
+                    } else {
+                        return Err(io::Error::new(io::ErrorKind::Other,
+                                   "Jump offsets must be constants"));
                     }
                 }
             }

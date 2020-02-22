@@ -70,7 +70,8 @@ class Opcode(object):
             elif c == 'h':
                 data_type = 'Handle'
             elif c == 'o':
-                data_type = 'Offset'
+                yield 'Offset'
+                continue
             elif c == 'v':
                 # TODO: These types are technically variable and based on
                 # the dynamic handle.  Not sure how we should handle that.
