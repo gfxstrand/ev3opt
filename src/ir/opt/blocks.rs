@@ -84,15 +84,13 @@ pub fn flat_to_blocks_obj(obj: &mut ir::Object) {
     }
     assert!(block.instrs.is_empty());
 
-    for block in obj.blocks.iter_mut() {
-        for instr in block.instrs.iter_mut() {
-            for param in instr.params.iter_mut() {
-                if let ir::ParamType::IP = param.param_type {
-                    let ip = param.to_u32();
-                    let block_id = *targets.get(&ip).unwrap();
-                    param.param_type = ir::ParamType::BlockID;
-                    param.value = ir::ParamValue::Constant(block_id as i32);
-                }
+    for instr in obj.iter_instrs_mut() {
+        for param in instr.params.iter_mut() {
+            if let ir::ParamType::IP = param.param_type {
+                let ip = param.to_u32();
+                let block_id = *targets.get(&ip).unwrap();
+                param.param_type = ir::ParamType::BlockID;
+                param.value = ir::ParamValue::Constant(block_id as i32);
             }
         }
     }

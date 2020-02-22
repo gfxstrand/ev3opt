@@ -227,6 +227,72 @@ impl Object {
     pub fn is_subcall(&self) -> bool {
         self.owner_id == 0 && self.trigger_count == 1
     }
+
+    pub fn iter_instrs(&self) -> ObjectInstrIter {
+        ObjectInstrIter {
+            instr_iter: Some(self.instrs.iter()),
+            block_iter: self.blocks.iter(),
+        }
+    }
+
+    pub fn iter_instrs_mut(&mut self) -> ObjectInstrIterMut {
+        ObjectInstrIterMut {
+            instr_iter: Some(self.instrs.iter_mut()),
+            block_iter: self.blocks.iter_mut(),
+        }
+    }
+}
+
+pub struct ObjectInstrIter<'a> {
+    block_iter: std::slice::Iter<'a, Block>,
+    instr_iter: Option<std::slice::Iter<'a, Instruction>>,
+}
+
+impl<'a> Iterator for ObjectInstrIter<'a> {
+    // we will be counting with usize
+    type Item = &'a Instruction;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(iiter) = self.instr_iter.as_mut() {
+                if let Some(instr) = iiter.next() {
+                    return Some(instr);
+                }
+            }
+            if let Some(block) = self.block_iter.next() {
+                self.instr_iter = Some(block.instrs.iter());
+            } else {
+                return None
+            }
+        }
+    }
+}
+
+pub struct ObjectInstrIterMut<'a> {
+    block_iter: std::slice::IterMut<'a, Block>,
+    instr_iter: Option<std::slice::IterMut<'a, Instruction>>,
+}
+
+impl<'a> Iterator for ObjectInstrIterMut<'a> {
+    // we will be counting with usize
+    type Item = &'a mut Instruction;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(iiter) = self.instr_iter.as_mut() {
+                if let Some(instr) = iiter.next() {
+                    return Some(instr);
+                }
+            }
+            if let Some(block) = self.block_iter.next() {
+                self.instr_iter = Some(block.instrs.iter_mut());
+            } else {
+                return None
+            }
+        }
+    }
 }
 
 impl fmt::Display for Object {
