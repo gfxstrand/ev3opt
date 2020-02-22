@@ -219,26 +219,119 @@ pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Res
     }
 }
 
-struct Reloc {
-    abs_offset: u64,
+struct IPReloc {
+    file_offset: u32,
     source_ip: u32,
     target_ip: u32,
 }
 
-fn write_param_reloc<W: io::Write + io::Seek>(w: &mut W,
-                                              source_ip: u32,
-                                              target_ip: u32,
-                                              relocs: &mut Vec<Reloc>)
-                                              -> io::Result<()> {
-    /* Relocated values always have to be the full 4 bytes */
-    write_u8(w, PRIMPAR_CONST | PRIMPAR_LONG | PRIMPAR_4_BYTES)?;
-    relocs.push(Reloc {
-        abs_offset: w.seek(io::SeekFrom::Current(0))?,
-        source_ip: source_ip,
-        target_ip: target_ip,
-    });
-    /* Write a dummy value so we can find if we fail to relocate */
-    write_le_u32(w, 0xdeadbeef)
+struct OffsetReloc {
+    file_offset: u32,
+    value: i32,
+}
+
+struct RelocWriter {
+    ip_relocs: Vec<IPReloc>,
+    offset_relocs: Vec<OffsetReloc>,
+    ip_map: std::collections::HashMap::<u32, (i32, i32)>,
+    reloc_bits: u8,
+}
+
+impl RelocWriter {
+    pub const SIZES: [u8; 4] = [6, 8, 16, 32];
+
+    pub fn new(reloc_bits: u8) -> RelocWriter {
+        RelocWriter {
+            ip_relocs: vec![],
+            offset_relocs: vec![],
+            ip_map: std::collections::HashMap::new(),
+            reloc_bits: reloc_bits,
+        }
+    }
+
+    fn write_value(&self, w: &mut dyn io::Write, x: u32) -> io::Result<()> {
+        match self.reloc_bits {
+            6 => write_u8(w, PRIMPAR_CONST | PRIMPAR_SHORT |
+                             ((x as u8) & PRIMPAR_VALUE)),
+            8 => write_u8(w, x as u8),
+            16 => write_le_u16(w, x as u16),
+            32 => write_le_u32(w, x as u32),
+            _ => panic!("Invalid reloc size"),
+        }
+    }
+
+    pub fn write_param_reloc<W: io::Write + io::Seek>(&mut self, w: &mut W,
+                                                      source_ip: u32,
+                                                      target_ip: u32)
+                                                      -> io::Result<()> {
+        match self.reloc_bits {
+            6 => { /* Do nothing; we'll write it at the end */ },
+            8 => write_u8(w, PRIMPAR_CONST | PRIMPAR_LONG | PRIMPAR_1_BYTE)?,
+            16 => write_u8(w, PRIMPAR_CONST | PRIMPAR_LONG | PRIMPAR_2_BYTES)?,
+            32 => write_u8(w, PRIMPAR_CONST | PRIMPAR_LONG | PRIMPAR_4_BYTES)?,
+            _ => panic!("Invalid reloc size"),
+        }
+        let file_offset = w.seek(io::SeekFrom::Current(0))?;
+        assert!(file_offset < u32::max_value() as u64);
+        self.ip_relocs.push(IPReloc {
+            file_offset: file_offset as u32,
+            source_ip: source_ip,
+            target_ip: target_ip,
+        });
+        self.write_value(w, 0xdeadbeef)
+    }
+
+    pub fn register_ip(&mut self, ip: u32, start_offset: u64, end_offset:u64) {
+        assert!(start_offset < i32::max_value() as u64);
+        assert!(end_offset < i32::max_value() as u64);
+        assert!(start_offset < end_offset);
+        self.ip_map.insert(ip, (start_offset as i32, end_offset as i32));
+    }
+
+    pub fn calc_offsets(&mut self) -> bool {
+        assert!(self.offset_relocs.is_empty());
+        for reloc in self.ip_relocs.iter() {
+            let source_offset = match self.ip_map.get(&reloc.source_ip) {
+                Some((_, end)) => end,
+                None => panic!("Invalid instruction offset"),
+            };
+
+            let target_offset = match self.ip_map.get(&reloc.target_ip) {
+                Some((start, _)) => start,
+                None => panic!("Invalid instruction offset"),
+            };
+
+            let rel_offset = *target_offset - *source_offset;
+            if rel_offset != sign_extend_i32(rel_offset, self.reloc_bits) {
+                return false;
+            }
+            self.offset_relocs.push(OffsetReloc {
+                file_offset: reloc.file_offset,
+                value: rel_offset,
+            });
+        }
+        self.ip_relocs.clear();
+        true
+    }
+
+    pub fn finish_relocs<W: io::Write + io::Seek>(&mut self, w: &mut W) -> io::Result<()> {
+        /* Save off the current file offset as we're about to scratch around
+         * to do relocations for the current object.
+         */
+        let obj_end = w.seek(io::SeekFrom::Current(0))?;
+
+        assert!(self.ip_relocs.is_empty());
+        /* Write all the relocations for this object */
+        for reloc in self.offset_relocs.iter() {
+            w.seek(io::SeekFrom::Start(reloc.file_offset as u64))?;
+            self.write_value(w, reloc.value as u32)?;
+        }
+        self.offset_relocs.clear();
+
+        /* Put the file back where we found it */
+        w.seek(io::SeekFrom::Start(obj_end))?;
+        Ok(())
+    }
 }
 
 fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) -> io::Result<ir::Instruction> {
@@ -301,7 +394,8 @@ fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) ->
 
 fn write_instruction<W: io::Write + io::Seek>(w: &mut W,
                                               instr: &ir::Instruction,
-                                              relocs: &mut Vec<Reloc>) -> io::Result<()> {
+                                              relocs: &mut RelocWriter)
+                                              -> io::Result<()> {
     w.write(&[instr.op.to_u8()])?;
     if instr.op.has_subcode() {
         write_u8(w, instr.op.get_subcode_as_u8())?;
@@ -312,7 +406,7 @@ fn write_instruction<W: io::Write + io::Seek>(w: &mut W,
             if let ir::DataType::IP = data_type {
                 if let ir::ParamValue::Constant(ip) = param.value {
                     assert!(ip >= 0);
-                    write_param_reloc(w, instr.ip, ip as u32, relocs)?;
+                    relocs.write_param_reloc(w, instr.ip, ip as u32)?;
                     continue;
                 } else {
                     panic!("IPs must be constants");
@@ -493,13 +587,10 @@ pub fn write_rbf_file(path: &Path, image: &ir::Image) -> io::Result<()> {
     /* Skip past the image and object headers; we'll write them later */
     w.seek(io::SeekFrom::Start(16 + (image.objects.len() as u64) * 12))?;
 
-    use std::collections::HashMap;
     let mut obj_offsets: Vec<u32> = vec![];
     for obj in image.objects.iter() {
-        let mut ip_map = HashMap::<u32, (i32, i32)>::new();
-        let mut relocs: Vec<Reloc> = vec![];
-
         obj_offsets.push(w.seek(io::SeekFrom::Current(0))? as u32);
+
         if obj.is_subcall() {
             write_u8(w, obj.params.len() as u8)?;
             for param in obj.params.iter() {
@@ -507,39 +598,34 @@ pub fn write_rbf_file(path: &Path, image: &ir::Image) -> io::Result<()> {
             }
         }
 
-        let mut start_offset = w.seek(io::SeekFrom::Current(0))?;
-        for instr in obj.instrs.iter() {
-            write_instruction(w, instr, &mut relocs)?;
-            let end_offset = w.seek(io::SeekFrom::Current(0))?;
-            assert!(start_offset < i32::max_value() as u64);
-            assert!(end_offset < i32::max_value() as u64);
-            assert!(start_offset < end_offset);
-            ip_map.insert(instr.ip, (start_offset as i32, end_offset as i32));
-            start_offset = end_offset;
-        }
-
-        /* Save off the current file offset as we're about to scratch around
-         * to do relocations for the current object.
+        /* We don't know how bit the offsets need to be until we've written out
+         * the instructions and we can't write the instructions without knowing
+         * the sizes of our offsets.  To solve this chicken-and-egg problem, we
+         * start at the smallest size and, if that fails, try to write out the
+         * object again with a bigger size.
+         *
+         * Stash this in case we need to re-try this object.
          */
-        let obj_end = w.seek(io::SeekFrom::Current(0))?;
+        let instrs_start = w.seek(io::SeekFrom::Current(0))?;
+        for reloc_size in RelocWriter::SIZES.iter() {
+            w.seek(io::SeekFrom::Start(instrs_start))?;
 
-        /* Write all the relocations for this object */
-        for reloc in relocs.iter() {
-            w.seek(io::SeekFrom::Start(reloc.abs_offset))?;
-            let source_offset = match ip_map.get(&reloc.source_ip) {
-                Some((_, end)) => end,
-                None => panic!("Invalid instruction offset"),
-            };
+            let mut relocs = RelocWriter::new(*reloc_size);
 
-            let target_offset = match ip_map.get(&reloc.target_ip) {
-                Some((start, _)) => start,
-                None => panic!("Invalid instruction offset"),
-            };
+            let mut start_offset = w.seek(io::SeekFrom::Current(0))?;
+            for instr in obj.instrs.iter() {
+                write_instruction(w, instr, &mut relocs)?;
+                let end_offset = w.seek(io::SeekFrom::Current(0))?;
+                relocs.register_ip(instr.ip, start_offset, end_offset);
+                start_offset = end_offset;
+            }
 
-            write_le_u32(w, (*target_offset - *source_offset) as u32);
+            if relocs.calc_offsets() {
+                relocs.finish_relocs(w)?;
+                break;
+            }
+            assert!(*reloc_size < 32);
         }
-
-        w.seek(io::SeekFrom::Start(obj_end))?;
     }
     let image_size = w.seek(io::SeekFrom::Current(0))? as u32;
 
