@@ -38,6 +38,7 @@ pub enum DataType {
     String(u8), /* Strings may have a size; 0 for unknown */
     Handle,
     Offset,
+    IP,
 }
 
 impl DataType {
@@ -83,6 +84,7 @@ impl fmt::Display for DataType {
                 },
             DataType::Handle => write!(f, "handle"),
             DataType::Offset => write!(f, "offset"),
+            DataType::IP => write!(f, "IP"),
         }
     }
 }
@@ -160,6 +162,7 @@ pub struct Object {
     pub owner_id: u16,
     pub trigger_count: u16,
     pub local_bytes: u32,
+    pub last_ip: u32,
 
     pub params: Vec<ParamType>,
     pub instrs: Vec<Instruction>,

@@ -219,6 +219,28 @@ pub fn write_param_value(w: &mut dyn io::Write, val: &ir::ParamValue) -> io::Res
     }
 }
 
+struct Reloc {
+    abs_offset: u64,
+    source_ip: u32,
+    target_ip: u32,
+}
+
+fn write_param_reloc<W: io::Write + io::Seek>(w: &mut W,
+                                              source_ip: u32,
+                                              target_ip: u32,
+                                              relocs: &mut Vec<Reloc>)
+                                              -> io::Result<()> {
+    /* Relocated values always have to be the full 4 bytes */
+    write_u8(w, PRIMPAR_CONST | PRIMPAR_LONG | PRIMPAR_4_BYTES)?;
+    relocs.push(Reloc {
+        abs_offset: w.seek(io::SeekFrom::Current(0))?,
+        source_ip: source_ip,
+        target_ip: target_ip,
+    });
+    /* Write a dummy value so we can find if we fail to relocate */
+    write_le_u32(w, 0xdeadbeef)
+}
+
 fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) -> io::Result<ir::Instruction> {
     let opcode_u8 = read_u8(r)?;
     let has_subcode = ir::Opcode::u8_has_subcode(opcode_u8);
@@ -277,13 +299,33 @@ fn read_instruction(r: &mut dyn io::Read, objects: &Vec<ir::Object>, ip: u32) ->
     })
 }
 
-fn write_instruction(w: &mut dyn io::Write, instr: &ir::Instruction) -> io::Result<()> {
+fn write_instruction<W: io::Write + io::Seek>(w: &mut W,
+                                              instr: &ir::Instruction,
+                                              relocs: &mut Vec<Reloc>) -> io::Result<()> {
     w.write(&[instr.op.to_u8()])?;
     if instr.op.has_subcode() {
         write_u8(w, instr.op.get_subcode_as_u8())?;
     }
-    for param in &instr.params {
+    let mut first_param = true;
+    for param in instr.params.iter() {
+        if let ir::ParamType::Input(data_type) = param.param_type {
+            if let ir::DataType::IP = data_type {
+                if let ir::ParamValue::Constant(ip) = param.value {
+                    assert!(ip >= 0);
+                    write_param_reloc(w, instr.ip, ip as u32, relocs)?;
+                    continue;
+                } else {
+                    panic!("IPs must be constants");
+                }
+            }
+        }
         write_param_value(w, &param.value)?;
+        if first_param {
+            if let ir::Opcode::Call = instr.op {
+                write_u8(w, (instr.params.len() - 1) as u8)?;
+            }
+            first_param = false;
+        }
     }
     Ok(())
 }
@@ -361,6 +403,7 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
             owner_id: read_le_u16(r)?,
             trigger_count: read_le_u16(r)?,
             local_bytes: read_le_u32(r)?,
+            last_ip: 0,
             params: vec![],
             instrs: vec![],
         });
@@ -382,23 +425,49 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
     /* Read instructions */
     for obj_idx in 0..num_objects {
         let obj_start = obj_offsets[obj_idx];
+        let mut rel_offset = 0i32;
         r.seek(io::SeekFrom::Start(obj_start as u64))?;
         loop {
-            let cur_offset = r.seek(io::SeekFrom::Current(0))?;
-            if cur_offset >= u32::max_value() as u64 {
+            /* We give each new instruction rel_offset as its ip */
+            let mut instr = read_instruction(r, &objects, rel_offset as u32)?;
+
+            /* Compute the new rel_offset after reading the instruction */
+            let abs_offset = r.seek(io::SeekFrom::Current(0))?;
+            assert!(abs_offset >= obj_start as u64);
+            if abs_offset >= i32::max_value() as u64 {
                 return Err(io::Error::new(io::ErrorKind::Other,
                            "File offset too large"));
             }
-            let cur_offset = cur_offset as u32;
-            assert!(cur_offset >= obj_start);
-            let ip = cur_offset - obj_start;
+            rel_offset = abs_offset as i32 - obj_start as i32;
 
-            let instr = read_instruction(r, &objects, ip)?;
-            match instr.op {
-                ir::Opcode::ObjectEnd => break,
-                _ => {},
+            /* Turn any jump offsets into IPs */
+            for param in instr.params.iter_mut() {
+                if let ir::ParamType::Input(data_type) = param.param_type {
+                    if let ir::DataType::Offset = data_type {
+                        if let ir::ParamValue::Constant(offset) = param.value {
+                            let target = rel_offset + offset;
+                            param.param_type =
+                                ir::ParamType::Input(ir::DataType::IP);
+                            param.value = ir::ParamValue::Constant(target);
+                        } else {
+                            return Err(io::Error::new(io::ErrorKind::Other,
+                                       "Jump offsets must be constants"));
+                        }
+                    }
+                }
             }
+
+            let end = match instr.op {
+                ir::Opcode::ObjectEnd => true,
+                _ => false,
+            };
+
             objects[obj_idx].instrs.push(instr);
+
+            if end {
+                objects[obj_idx].last_ip = rel_offset as u32;
+                break;
+            }
         }
     }
 
@@ -424,8 +493,12 @@ pub fn write_rbf_file(path: &Path, image: &ir::Image) -> io::Result<()> {
     /* Skip past the image and object headers; we'll write them later */
     w.seek(io::SeekFrom::Start(16 + (image.objects.len() as u64) * 12))?;
 
+    use std::collections::HashMap;
     let mut obj_offsets: Vec<u32> = vec![];
     for obj in image.objects.iter() {
+        let mut ip_map = HashMap::<u32, (i32, i32)>::new();
+        let mut relocs: Vec<Reloc> = vec![];
+
         obj_offsets.push(w.seek(io::SeekFrom::Current(0))? as u32);
         if obj.is_subcall() {
             write_u8(w, obj.params.len() as u8)?;
@@ -433,9 +506,40 @@ pub fn write_rbf_file(path: &Path, image: &ir::Image) -> io::Result<()> {
                 write_call_param_type(w, param)?;
             }
         }
+
+        let mut start_offset = w.seek(io::SeekFrom::Current(0))?;
         for instr in obj.instrs.iter() {
-            write_instruction(w, instr)?;
+            write_instruction(w, instr, &mut relocs)?;
+            let end_offset = w.seek(io::SeekFrom::Current(0))?;
+            assert!(start_offset < i32::max_value() as u64);
+            assert!(end_offset < i32::max_value() as u64);
+            assert!(start_offset < end_offset);
+            ip_map.insert(instr.ip, (start_offset as i32, end_offset as i32));
+            start_offset = end_offset;
         }
+
+        /* Save off the current file offset as we're about to scratch around
+         * to do relocations for the current object.
+         */
+        let obj_end = w.seek(io::SeekFrom::Current(0))?;
+
+        /* Write all the relocations for this object */
+        for reloc in relocs.iter() {
+            w.seek(io::SeekFrom::Start(reloc.abs_offset))?;
+            let source_offset = match ip_map.get(&reloc.source_ip) {
+                Some((_, end)) => end,
+                None => panic!("Invalid instruction offset"),
+            };
+
+            let target_offset = match ip_map.get(&reloc.target_ip) {
+                Some((start, _)) => start,
+                None => panic!("Invalid instruction offset"),
+            };
+
+            write_le_u32(w, (*target_offset - *source_offset) as u32);
+        }
+
+        w.seek(io::SeekFrom::Start(obj_end))?;
     }
     let image_size = w.seek(io::SeekFrom::Current(0))? as u32;
 
