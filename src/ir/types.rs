@@ -168,6 +168,21 @@ pub struct Object {
 }
 
 impl Object {
+    pub fn new(owner_id: u16, trigger_count: u16, local_bytes: u32) -> Object {
+        Object {
+            owner_id: owner_id,
+            trigger_count: trigger_count,
+            local_bytes: local_bytes,
+
+            /* These have defaults */
+            last_ip: 0,
+            params: vec![],
+            instrs: vec![],
+        }
+    }
+}
+
+impl Object {
     pub fn is_subcall(&self) -> bool {
         self.owner_id == 0 && self.trigger_count == 1
     }

@@ -492,14 +492,10 @@ pub fn read_rbf_file(path: &Path) -> io::Result<ir::Image> {
     let mut obj_offsets: Vec<u32> = vec![];
     for _ in 0..num_objects {
         obj_offsets.push(read_le_u32(r)?);
-        objects.push(ir::Object {
-            owner_id: read_le_u16(r)?,
-            trigger_count: read_le_u16(r)?,
-            local_bytes: read_le_u32(r)?,
-            last_ip: 0,
-            params: vec![],
-            instrs: vec![],
-        });
+        let owner_id = read_le_u16(r)?;
+        let trigger_count = read_le_u16(r)?;
+        let local_bytes = read_le_u32(r)?;
+        objects.push(ir::Object::new(owner_id, trigger_count, local_bytes));
     }
 
     /* Read object prototypes for subroutines */
