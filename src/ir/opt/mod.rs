@@ -19,43 +19,14 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-use std::env;
-use std::process;
-use std::path::Path;
 
-mod rbf;
-mod ir;
+use crate::ir;
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+pub fn optimize_obj(obj: &mut ir::Object) {
+}
 
-    if args.len() != 2 && args.len() != 3 {
-        println!("Usage: {} filename", args[0]);
-        process::exit(1);
-    }
-
-    let in_path = Path::new(&args[1]);
-
-    let mut image = match rbf::read_rbf_file(in_path) {
-        Ok(i) => i,
-        Err(why) => {
-            println!("Failed to parse file: {}", why);
-            process::exit(1);
-        },
-    };
-
-    ir::opt::optimize(&mut image);
-
-    print!("{}", image);
-
-    if args.len() == 3 {
-        let out_path = Path::new(&args[2]);
-        match rbf::write_rbf_file(out_path, &image) {
-            Ok(i) => {},
-            Err(why) => {
-                println!("Failed to write file: {}", why);
-                process::exit(1);
-            },
-        }
+pub fn optimize(image: &mut ir::Image) {
+    for obj in image.objects.iter_mut() {
+        optimize_obj(obj);
     }
 }

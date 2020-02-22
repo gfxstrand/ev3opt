@@ -25,3 +25,5 @@ pub use opcodes::Opcode;
 
 mod types;
 pub use types::*;
+
+pub mod opt;
