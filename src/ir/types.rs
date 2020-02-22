@@ -21,9 +21,7 @@
  */
 
 use std::fmt;
-
-mod opcodes;
-pub use opcodes::Opcode;
+use crate::ir;
 
 #[derive(Copy, Clone)]
 pub enum DataType {
@@ -145,7 +143,7 @@ impl fmt::Display for Parameter {
 
 pub struct Instruction {
     pub ip: u32,
-    pub op: Opcode,
+    pub op: ir::Opcode,
     pub params: Vec<Parameter>,
 }
 
