@@ -25,6 +25,8 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
+use crate::util::sign_extend_i32;
+use crate::util::truncate_u32;
 use crate::ir;
 
 const PRIMPAR_SHORT: u8         = 0x00;
@@ -52,16 +54,6 @@ const CALLPAR_DATA16: u8        = 0x01;
 const CALLPAR_DATA32: u8        = 0x02;
 const CALLPAR_DATAF: u8         = 0x03;
 const CALLPAR_STRING: u8        = 0x04;
-
-fn sign_extend_i32(x: i32, bits: u8) -> i32 {
-    let shift = 32 - bits;
-    (x << shift) >> shift
-}
-
-fn truncate_u32(x: u32, bits: u8) -> u32 {
-    let shift = 32 - bits;
-    (x << shift) >> shift
-}
 
 fn read_u8(r: &mut dyn io::Read) -> io::Result<u8> {
     let mut buf = [0u8; 1];

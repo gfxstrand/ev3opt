@@ -19,44 +19,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-use std::env;
-use std::process;
-use std::path::Path;
 
-mod util;
-mod rbf;
-mod ir;
+#[inline]
+pub fn sign_extend_i32(x: i32, bits: u8) -> i32 {
+    let shift = 32 - bits;
+    (x << shift) >> shift
+}
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    if args.len() != 2 && args.len() != 3 {
-        println!("Usage: {} filename", args[0]);
-        process::exit(1);
-    }
-
-    let in_path = Path::new(&args[1]);
-
-    let mut image = match rbf::read_rbf_file(in_path) {
-        Ok(i) => i,
-        Err(why) => {
-            println!("Failed to parse file: {}", why);
-            process::exit(1);
-        },
-    };
-
-    ir::opt::optimize(&mut image);
-
-    print!("{}", image);
-
-    if args.len() == 3 {
-        let out_path = Path::new(&args[2]);
-        match rbf::write_rbf_file(out_path, &image) {
-            Ok(_) => {},
-            Err(why) => {
-                println!("Failed to write file: {}", why);
-                process::exit(1);
-            },
-        }
-    }
+#[inline]
+pub fn truncate_u32(x: u32, bits: u8) -> u32 {
+    let shift = 32 - bits;
+    (x << shift) >> shift
 }
