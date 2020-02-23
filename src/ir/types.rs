@@ -242,41 +242,89 @@ impl Object {
     }
 
     pub fn iter_instrs(&self) -> ObjectInstrIter {
+        debug_assert!(self.blocks.is_empty() || self.instrs.is_empty());
+        let mut block_iter = self.blocks.iter();
+        let back_iter = match block_iter.next_back() {
+            Some(block) => Some(block.instrs.iter()),
+            None => None,
+        };
         ObjectInstrIter {
-            instr_iter: Some(self.instrs.iter()),
-            block_iter: self.blocks.iter(),
+            block_iter: block_iter,
+            front_iter: Some(self.instrs.iter()),
+            back_iter: back_iter,
         }
     }
 
     pub fn iter_instrs_mut(&mut self) -> ObjectInstrIterMut {
+        debug_assert!(self.blocks.is_empty() || self.instrs.is_empty());
+        let mut block_iter = self.blocks.iter_mut();
+        let back_iter = match block_iter.next_back() {
+            Some(block) => Some(block.instrs.iter_mut()),
+            None => None,
+        };
         ObjectInstrIterMut {
-            instr_iter: Some(self.instrs.iter_mut()),
-            block_iter: self.blocks.iter_mut(),
+            block_iter: block_iter,
+            front_iter: Some(self.instrs.iter_mut()),
+            back_iter: back_iter,
         }
     }
 }
 
 pub struct ObjectInstrIter<'a> {
     block_iter: std::slice::Iter<'a, Block>,
-    instr_iter: Option<std::slice::Iter<'a, Instruction>>,
+    front_iter: Option<std::slice::Iter<'a, Instruction>>,
+    back_iter: Option<std::slice::Iter<'a, Instruction>>,
 }
 
 impl<'a> Iterator for ObjectInstrIter<'a> {
-    // we will be counting with usize
     type Item = &'a Instruction;
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(iiter) = self.instr_iter.as_mut() {
+            if let Some(iiter) = self.front_iter.as_mut() {
                 if let Some(instr) = iiter.next() {
                     return Some(instr);
                 }
             }
             if let Some(block) = self.block_iter.next() {
-                self.instr_iter = Some(block.instrs.iter());
+                self.front_iter = Some(block.instrs.iter());
+                continue;
+            }
+            if let Some(iiter) = self.back_iter.as_mut() {
+                if let Some(instr) = iiter.next() {
+                    return Some(instr);
+                } else {
+                    return None;
+                }
             } else {
-                return None
+                return None;
+            }
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for ObjectInstrIter<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(iiter) = self.back_iter.as_mut() {
+                if let Some(instr) = iiter.next_back() {
+                    return Some(instr);
+                }
+            }
+            if let Some(block) = self.block_iter.next_back() {
+                self.back_iter = Some(block.instrs.iter());
+                continue;
+            }
+            if let Some(iiter) = self.front_iter.as_mut() {
+                if let Some(instr) = iiter.next_back() {
+                    return Some(instr);
+                } else {
+                    return None;
+                }
+            } else {
+                return None;
             }
         }
     }
@@ -284,7 +332,8 @@ impl<'a> Iterator for ObjectInstrIter<'a> {
 
 pub struct ObjectInstrIterMut<'a> {
     block_iter: std::slice::IterMut<'a, Block>,
-    instr_iter: Option<std::slice::IterMut<'a, Instruction>>,
+    front_iter: Option<std::slice::IterMut<'a, Instruction>>,
+    back_iter: Option<std::slice::IterMut<'a, Instruction>>,
 }
 
 impl<'a> Iterator for ObjectInstrIterMut<'a> {
@@ -294,15 +343,49 @@ impl<'a> Iterator for ObjectInstrIterMut<'a> {
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(iiter) = self.instr_iter.as_mut() {
+            if let Some(iiter) = self.front_iter.as_mut() {
                 if let Some(instr) = iiter.next() {
                     return Some(instr);
                 }
             }
             if let Some(block) = self.block_iter.next() {
-                self.instr_iter = Some(block.instrs.iter_mut());
+                self.front_iter = Some(block.instrs.iter_mut());
+                continue;
+            }
+            if let Some(iiter) = self.back_iter.as_mut() {
+                if let Some(instr) = iiter.next() {
+                    return Some(instr);
+                } else {
+                    return None;
+                }
             } else {
-                return None
+                return None;
+            }
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for ObjectInstrIterMut<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(iiter) = self.back_iter.as_mut() {
+                if let Some(instr) = iiter.next_back() {
+                    return Some(instr);
+                }
+            }
+            if let Some(block) = self.block_iter.next_back() {
+                self.back_iter = Some(block.instrs.iter_mut());
+                continue;
+            }
+            if let Some(iiter) = self.front_iter.as_mut() {
+                if let Some(instr) = iiter.next_back() {
+                    return Some(instr);
+                } else {
+                    return None;
+                }
+            } else {
+                return None;
             }
         }
     }
