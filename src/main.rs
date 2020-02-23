@@ -51,7 +51,7 @@ fn main() {
     if args.len() == 3 {
         let out_path = Path::new(&args[2]);
         match rbf::write_rbf_file(out_path, &image) {
-            Ok(i) => {},
+            Ok(_) => {},
             Err(why) => {
                 println!("Failed to write file: {}", why);
                 process::exit(1);

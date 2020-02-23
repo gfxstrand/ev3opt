@@ -38,17 +38,6 @@ pub enum DataType {
 }
 
 impl DataType {
-    pub fn is_array(&self) -> bool {
-        match self {
-            DataType::Int8Array => true,
-            DataType::Int16Array => true,
-            DataType::Int32Array => true,
-            DataType::FloatArray => true,
-            DataType::String(_) => true,
-            _ => false,
-        }
-    }
-
     pub fn without_array(&self) -> DataType {
         match self {
             DataType::Int8Array => DataType::Int8,
