@@ -146,3 +146,31 @@ pub fn dead_code_obj(obj: &mut ir::Object) -> bool {
     }
     progress
 }
+
+pub fn remove_nops_obj(obj: &mut ir::Object) -> bool {
+    let mut progress = false;
+
+    for block in obj.blocks.iter_mut() {
+        let mut keep_instrs = vec![];
+        for instr in block.instrs.drain(..) {
+            if let ir::Opcode::Nop = instr.op {
+                progress = true;
+            } else {
+                keep_instrs.push(instr);
+            }
+        }
+        block.instrs = keep_instrs;
+    }
+
+    let mut keep_instrs = vec![];
+    for instr in obj.instrs.drain(..) {
+        if let ir::Opcode::Nop = instr.op {
+            progress = true;
+        } else {
+            keep_instrs.push(instr);
+        }
+    }
+    obj.instrs = keep_instrs;
+
+    progress
+}

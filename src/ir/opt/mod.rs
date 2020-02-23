@@ -29,6 +29,7 @@ mod memory;
 pub fn optimize_obj(obj: &mut ir::Object) {
     blocks::flat_to_blocks_obj(obj);
     dead_code::dead_code_obj(obj);
+    dead_code::remove_nops_obj(obj);
     blocks::blocks_to_flat_obj(obj);
 }
 
