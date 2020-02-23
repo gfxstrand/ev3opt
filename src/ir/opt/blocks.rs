@@ -100,8 +100,19 @@ pub fn blocks_to_flat_obj(obj: &mut ir::Object) {
     assert!(obj.instrs.is_empty());
 
     let mut targets = HashMap::new();
-    for block in obj.blocks.iter() {
-        targets.insert(block.id, block.instrs[0].ip);
+
+    /* Walk the blocks backwards and remember the IP of the first instruction
+     * in the previous block.  This way, if we encounter an empty block, any
+     * jumps to it will harmlessly jump to the subsequent block.  Since the
+     * last block is always the one containing EndObject, it's never empty.
+     */
+    debug_assert!(!obj.blocks.last().unwrap().instrs.is_empty());
+    let mut block_ip = 0;
+    for block in obj.blocks.iter().rev() {
+        if !block.instrs.is_empty() {
+            block_ip = block.instrs[0].ip;
+        }
+        targets.insert(block.id, block_ip);
     }
 
     for mut block in obj.blocks.drain(..) {
