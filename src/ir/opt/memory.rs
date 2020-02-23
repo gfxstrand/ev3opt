@@ -179,3 +179,120 @@ pub fn global_to_local(image: &mut ir::Image) -> bool {
     }
     true
 }
+
+#[derive(Copy, Clone)]
+enum ConstMemValue {
+    Undefined,
+    Unknown,
+    Constant(u8),
+}
+
+impl ConstMemValue {
+    pub fn set_value(&mut self, other: ConstMemValue) {
+        match other {
+            ConstMemValue::Undefined => panic!("Cannot set undefined"),
+            ConstMemValue::Unknown => *self = ConstMemValue::Unknown,
+            ConstMemValue::Constant(x) => {
+                match self {
+                    ConstMemValue::Undefined => *self = other,
+                    ConstMemValue::Unknown => {},
+                    ConstMemValue::Constant(y) => {
+                        if *y != x {
+                            *self = ConstMemValue::Unknown;
+                        }
+                    },
+                }
+            },
+        }
+    }
+}
+
+fn set_const_mem_values_i32(values: &mut Vec<ConstMemValue>,
+                            start: u32, size: u32, x: i32) {
+    for b in 0..size {
+        let x_byte = ((x as u32) >> (b * 8)) as u8;
+        values[(start + b) as usize].set_value(ConstMemValue::Constant(x_byte));
+    }
+}
+
+fn set_const_mem_values_unknown(values: &mut Vec<ConstMemValue>,
+                                start: u32, size: u32) {
+    let size = cmp::min(size, values.len() as u32 - start);
+    for b in 0..size {
+        values[(start + b) as usize].set_value(ConstMemValue::Unknown);
+    }
+}
+
+fn get_const_mem_values(values: &Vec<ConstMemValue>,
+                        start: u32, size: u32) -> Option<i32> {
+    let mut x = 0u32;
+    for b in 0..size {
+        if let ConstMemValue::Constant(x_byte) = values[(start + b) as usize] {
+            x |= (x_byte as u32) << (b * 8);
+        } else {
+            return None;
+        }
+    }
+    Some(x as i32)
+}
+
+pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
+    let mut values = vec![];
+    values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
+
+    for instr in obj.iter_instrs() {
+        match instr.op {
+            ir::Opcode::Move8_8 |
+            ir::Opcode::Move16_16 |
+            ir::Opcode::Move32_32 |
+            ir::Opcode::MoveF_F => {
+                debug_assert!(instr.params.len() == 2);
+                if let ir::ParamValue::Local(byte) = instr.params[1].value {
+                    let size = instr.params[1].param_type.data_type().size();
+                    if let ir::ParamValue::Constant(x) = instr.params[0].value {
+                        set_const_mem_values_i32(&mut values, byte, size, x);
+                    } else {
+                        set_const_mem_values_unknown(&mut values, byte, size);
+                    }
+                }
+            },
+            _ => {
+                /* Anything else we consider an unknown write.  We could
+                 * potentially handle more Move instructions here but they
+                 * will get handled by constant_folding and it saves us
+                 * complexity if we don't have to think about truncation and
+                 * sign-extension here.
+                 */
+                for param in instr.params.iter() {
+                    if let ir::ParamType::Output(_) = param.param_type {
+                        if let ir::ParamValue::Local(byte) = param.value {
+                            let size = param.param_type.data_type().size();
+                            set_const_mem_values_unknown(&mut values, byte, size);
+                        }
+                    }
+                }
+            },
+        }
+    }
+
+    let mut progress = false;
+
+    for instr in obj.iter_instrs_mut() {
+        for param in instr.params.iter_mut() {
+            if let ir::ParamType::Input(_) = param.param_type {
+                if let ir::ParamValue::Local(byte) = param.value {
+                    let size = param.param_type.data_type().size();
+                    match get_const_mem_values(&values, byte, size) {
+                        Some(x) => {
+                            param.value = ir::ParamValue::Constant(x);
+                            progress = true;
+                        },
+                        None => {},
+                    }
+                }
+            }
+        }
+    }
+
+    progress
+}
