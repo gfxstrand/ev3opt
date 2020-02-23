@@ -24,6 +24,7 @@ use crate::ir;
 
 mod blocks;
 mod dead_code;
+mod inline;
 mod memory;
 
 pub fn optimize_obj(obj: &mut ir::Object) {
@@ -35,6 +36,10 @@ pub fn optimize_obj(obj: &mut ir::Object) {
 
 pub fn optimize(image: &mut ir::Image) {
     memory::global_to_local(image);
+    for obj in image.objects.iter_mut() {
+        optimize_obj(obj);
+    }
+    inline::inline_subcalls(image);
     for obj in image.objects.iter_mut() {
         optimize_obj(obj);
     }

@@ -127,6 +127,7 @@ impl fmt::Display for ParamType {
     }
 }
 
+#[derive(Clone)]
 pub enum ParamValue {
     Local(u32),
     Global(u32),
@@ -134,6 +135,7 @@ pub enum ParamValue {
     String(Vec<u8>),
 }
 
+#[derive(Clone)]
 pub struct Parameter {
     pub param_type: ParamType,
     pub value: ParamValue,
@@ -169,6 +171,7 @@ impl fmt::Display for Parameter {
     }
 }
 
+#[derive(Clone)]
 pub struct Instruction {
     pub ip: u32,
     pub op: ir::Opcode,
@@ -185,6 +188,7 @@ impl fmt::Display for Instruction {
     }
 }
 
+#[derive(Clone)]
 pub struct Block {
     pub id: u32,
     pub instrs: Vec<Instruction>,
@@ -209,6 +213,7 @@ impl fmt::Display for Block {
     }
 }
 
+#[derive(Clone)]
 pub struct Object {
     pub owner_id: u16,
     pub trigger_count: u16,
