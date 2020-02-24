@@ -184,3 +184,57 @@ pub fn inline_subcalls(image: &mut ir::Image) -> bool {
 
     true
 }
+
+pub fn remove_dead_subcalls(image: &mut ir::Image) -> bool {
+    let num_objects = image.objects.len();
+    let mut live = vec![];
+    live.resize(num_objects, false);
+
+    let mut progress = true;
+    while progress {
+        progress = false;
+
+        for (idx, obj) in image.objects.iter().enumerate() {
+            /* Consider all VMTHREAD and BLOCK objects always live */
+            if !obj.is_subcall() {
+                live[idx] = true;
+            }
+
+            if live[idx] {
+                for instr in obj.iter_instrs() {
+                    if let ir::Opcode::Call = instr.op {
+                        let callee_idx = (instr.params[0].to_u32() - 1) as usize;
+                        if !live[callee_idx] {
+                            live[callee_idx] = true;
+                            progress = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let mut remap = vec![];
+    remap.resize(num_objects, 0i32);
+
+    let mut kept = vec![];
+    for (idx, obj) in image.objects.drain(..).enumerate() {
+        if live[idx] {
+            remap[idx] = kept.len() as i32;
+            kept.push(obj);
+        }
+    }
+    image.objects = kept;
+
+    for obj in image.objects.iter_mut() {
+        for instr in obj.iter_instrs_mut() {
+            if let ir::Opcode::Call = instr.op {
+                let callee_idx = (instr.params[0].to_u32() - 1) as usize;
+                instr.params[0].value =
+                    ir::ParamValue::Constant(remap[callee_idx] + 1);
+            }
+        }
+    }
+
+    image.objects.len() < num_objects
+}

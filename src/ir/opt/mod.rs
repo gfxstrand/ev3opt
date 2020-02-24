@@ -25,8 +25,8 @@ use crate::ir;
 mod blocks;
 mod constant;
 mod dead_code;
-mod inline;
 mod memory;
+mod subcall;
 
 pub fn optimize_obj(obj: &mut ir::Object) {
     blocks::flat_to_blocks_obj(obj);
@@ -43,7 +43,8 @@ pub fn optimize(image: &mut ir::Image) {
     for obj in image.objects.iter_mut() {
         optimize_obj(obj);
     }
-    inline::inline_subcalls(image);
+    subcall::inline_subcalls(image);
+    subcall::remove_dead_subcalls(image);
     for obj in image.objects.iter_mut() {
         optimize_obj(obj);
     }
