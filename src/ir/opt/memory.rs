@@ -323,3 +323,74 @@ pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
 
     progress
 }
+
+pub fn trim_param_size(param: &mut ir::Parameter, size: u32) -> bool {
+    match param.param_type {
+        ir::ParamType::Input(ref mut data_type) |
+        ir::ParamType::Output(ref mut data_type) => {
+            assert!(size >= data_type.without_array().size());
+            if data_type.is_array() {
+                let max_len = size / data_type.without_array().size();
+                if max_len <= std::u8::MAX as u32 {
+                    let max_len = max_len as u8;
+                    let old_len = data_type.array_len();
+                    if old_len == 0 || max_len < old_len {
+                        data_type.set_array_len(max_len);
+                        return true;
+                    }
+                }
+            }
+        },
+        ir::ParamType::Offset |
+        ir::ParamType::IP |
+        ir::ParamType::BlockID => {
+            assert!(size >= 4);
+        },
+    }
+    false
+}
+
+pub fn trim_array_lengths_obj(obj: &mut ir::Object) -> bool {
+    let mut progress = false;
+
+    let local_bytes = obj.local_bytes;
+    for instr in obj.iter_instrs_mut() {
+        for param in instr.params.iter_mut() {
+            if let ir::ParamValue::Local(byte) = param.value {
+                debug_assert!(byte < local_bytes);
+                progress |= trim_param_size(param, local_bytes - byte);
+            }
+        }
+
+        match instr.op {
+            ir::Opcode::InputDevice(subcode) => {
+                match subcode {
+                    ir::opcodes::InputDeviceSubcode::READY_PCT |
+                    ir::opcodes::InputDeviceSubcode::READY_RAW |
+                    ir::opcodes::InputDeviceSubcode::READY_SI => {
+                        let num_values = instr.params[4].to_u32();
+                        /* We don't know the size of a given value without
+                         * querying it with GET_FORMAT which we clearly can't
+                         * do in a compiler.  Assume 4 bytes per value.
+                         */
+                        progress |= trim_param_size(&mut instr.params[5],
+                                                    num_values * 4);
+                    }
+                    _ => {},
+                }
+            },
+            ir::Opcode::InputReadExt => {
+                let num_values = instr.params[5].to_u32();
+                /* We don't know the size of a given value without querying it
+                 * with GET_FORMAT which we clearly can't do in a compiler.
+                 * Assume 4 bytes per value.
+                 */
+                progress |= trim_param_size(&mut instr.params[6],
+                                            num_values * 4);
+            },
+            _ => {},
+        }
+    }
+
+    progress
+}

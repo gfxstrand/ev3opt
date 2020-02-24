@@ -38,6 +38,39 @@ pub enum DataType {
 }
 
 impl DataType {
+    pub fn is_array(&self) -> bool {
+        match self {
+            DataType::Int8Array(_) => true,
+            DataType::Int16Array(_) => true,
+            DataType::Int32Array(_) => true,
+            DataType::FloatArray(_) => true,
+            DataType::String(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn array_len(&self) -> u8 {
+        match self {
+            DataType::Int8Array(len) => *len,
+            DataType::Int16Array(len) => *len,
+            DataType::Int32Array(len) => *len,
+            DataType::FloatArray(len) => *len,
+            DataType::String(len) => *len,
+            _ => panic!("Not an array type"),
+        }
+    }
+
+    pub fn set_array_len(&mut self, new_len: u8) {
+        match self {
+            DataType::Int8Array(len) => *len = new_len,
+            DataType::Int16Array(len) => *len = new_len,
+            DataType::Int32Array(len) => *len = new_len,
+            DataType::FloatArray(len) => *len = new_len,
+            DataType::String(len) => *len = new_len,
+            _ => panic!("Not an array type"),
+        }
+    }
+
     pub fn without_array(&self) -> DataType {
         match self {
             DataType::Int8Array(_) => DataType::Int8,
@@ -69,6 +102,7 @@ impl DataType {
             },
         }
     }
+
     pub fn align(&self) -> u32 {
         self.without_array().size()
     }

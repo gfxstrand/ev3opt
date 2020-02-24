@@ -31,6 +31,8 @@ mod subcall;
 pub fn optimize_obj(obj: &mut ir::Object) -> bool{
     blocks::flat_to_blocks_obj(obj);
 
+    memory::trim_array_lengths_obj(obj);
+
     let mut progress = false;
     loop {
         let mut p = false;
