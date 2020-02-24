@@ -130,3 +130,72 @@ pub fn blocks_to_flat_obj(obj: &mut ir::Object) {
         }
     }
 }
+
+pub fn clear_dead_blocks_obj(obj: &mut ir::Object) -> bool {
+    assert!(obj.instrs.is_empty());
+
+    let num_blocks = obj.blocks.len();
+    assert!(num_blocks != 0);
+
+    let mut id_to_idx = HashMap::new();
+    for (idx, block) in obj.blocks.iter().enumerate() {
+        id_to_idx.insert(block.id, idx);
+    }
+
+    let mut live = vec![];
+    live.resize(num_blocks, false);
+
+    live[0] = true;
+    /* The last block contains the ObjectEnd */
+    live[num_blocks - 1] = true;
+
+    let mut progress = true;
+    while progress {
+        progress = false;
+
+        for (idx, block) in obj.blocks.iter().enumerate() {
+            if !live[idx] {
+                continue;
+            }
+
+            if let Some(instr) = block.instrs.last() {
+                for param in instr.params.iter() {
+                    if let ir::ParamType::BlockID = param.param_type {
+                        let jr_idx = id_to_idx.get(&param.to_u32()).unwrap();
+                        if !live[*jr_idx] {
+                            progress = true;
+                            live[*jr_idx] = true;
+                        }
+                    }
+                }
+                match instr.op {
+                    ir::Opcode::Jr => {},
+                    ir::Opcode::Return => {},
+                    ir::Opcode::ObjectEnd => {},
+                    _ => {
+                        /* Anything else falls through to the next block */
+                        if !live[idx + 1] {
+                            progress = true;
+                            live[idx + 1] = true;
+                        }
+                    },
+                }
+            } else {
+                /* Empty blocks fall through */
+                if !live[idx + 1] {
+                    progress = true;
+                    live[idx + 1] = true;
+                }
+            }
+        }
+    }
+
+    let mut progress = false;
+    for idx in 0..num_blocks {
+        if !live[idx] {
+            obj.blocks[idx].instrs.clear();
+            progress = true;
+        }
+    }
+    progress
+}

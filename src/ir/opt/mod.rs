@@ -32,6 +32,7 @@ pub fn optimize_obj(obj: &mut ir::Object) {
     blocks::flat_to_blocks_obj(obj);
     memory::constant_propagation_obj(obj);
     constant::constant_fold_obj(obj);
+    blocks::clear_dead_blocks_obj(obj);
     dead_code::dead_code_obj(obj);
     dead_code::remove_nops_obj(obj);
     blocks::blocks_to_flat_obj(obj);
