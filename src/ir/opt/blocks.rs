@@ -221,9 +221,9 @@ pub fn clear_dead_blocks_obj(obj: &mut ir::Object) -> bool {
     }
 
     let mut progress = false;
-    for idx in 0..num_blocks {
-        if !live[idx] && !obj.blocks[idx].instrs.is_empty() {
-            obj.blocks[idx].instrs.clear();
+    for (idx, block) in obj.blocks.iter_mut().enumerate() {
+        if !live[idx] && !block.instrs.is_empty() {
+            block.instrs.clear();
             progress = true;
         }
     }
