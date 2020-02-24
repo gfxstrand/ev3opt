@@ -36,7 +36,7 @@ pub fn optimize_obj(obj: &mut ir::Object) -> bool{
     let mut progress = false;
     loop {
         let mut p = false;
-        p |= memory::constant_propagation_obj(obj);
+        p |= memory::copy_propagation_obj(obj);
         p |= constant::constant_fold_obj(obj);
         p |= blocks::clear_dead_blocks_obj(obj);
         p |= dead_code::dead_code_obj(obj);

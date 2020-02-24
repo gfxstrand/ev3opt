@@ -181,50 +181,89 @@ pub fn global_to_local(image: &mut ir::Image) -> bool {
 }
 
 #[derive(Copy, Clone)]
-enum ConstMemValue {
-    Undefined,
-    Unknown,
+enum MemValue {
+    Unwritten,
+    OneValue,
+    ManyValues,
+    CopyMem(u32),
     Constant(u8),
 }
 
-fn merge_const_mem_values_i32(values: &mut Vec<ConstMemValue>,
-                              start: u32, size: u32, x: i32) {
-    for b in 0..size {
-        let x_byte = ((x as u32) >> (b * 8)) as u8;
-        let val = &mut values[(start + b) as usize];
-        match val {
-            ConstMemValue::Undefined => *val = ConstMemValue::Constant(x_byte),
-            ConstMemValue::Unknown => {},
-            ConstMemValue::Constant(y_byte) => {
-                if x_byte != *y_byte {
-                    *val = ConstMemValue::Unknown;
+impl MemValue {
+    pub fn merge(&mut self, other: MemValue) {
+        match self {
+            MemValue::Unwritten => *self = other,
+            MemValue::OneValue => *self = MemValue::ManyValues,
+            MemValue::ManyValues => {},
+            MemValue::CopyMem(x) => {
+                if let MemValue::CopyMem(y) = other {
+                    if *x != y {
+                        *self = MemValue::ManyValues;
+                    }
+                } else {
+                    *self = MemValue::ManyValues;
+                }
+            },
+            MemValue::Constant(x) => {
+                if let MemValue::Constant(y) = other {
+                    if *x != y {
+                        *self = MemValue::ManyValues;
+                    }
+                } else {
+                    *self = MemValue::ManyValues;
                 }
             },
         }
     }
 }
 
-fn set_const_mem_values_i32(values: &mut Vec<ConstMemValue>,
+fn merge_mem_values_const_i32(values: &mut Vec<MemValue>,
+                              start: u32, size: u32, x: i32) {
+    for b in 0..size {
+        let x_byte = ((x as u32) >> (b * 8)) as u8;
+        values[(start + b) as usize].merge(MemValue::Constant(x_byte));
+    }
+}
+
+fn merge_mem_values_unknown(values: &mut Vec<MemValue>,
+                            start: u32, size: u32) {
+    let size = cmp::min(size, values.len() as u32 - start);
+    for b in 0..size {
+        values[(start + b) as usize].merge(MemValue::OneValue);
+    }
+}
+
+fn set_mem_values_const_i32(values: &mut Vec<MemValue>,
                             start: u32, size: u32, x: i32) {
     for b in 0..size {
         let x_byte = ((x as u32) >> (b * 8)) as u8;
-        values[(start + b) as usize] = ConstMemValue::Constant(x_byte);
+        values[(start + b) as usize] = MemValue::Constant(x_byte);
     }
 }
 
-fn set_const_mem_values_unknown(values: &mut Vec<ConstMemValue>,
-                                  start: u32, size: u32) {
-    let size = cmp::min(size, values.len() as u32 - start);
+fn set_mem_values_copy_mem(values: &mut Vec<MemValue>,
+                           dst: u32, size: u32, src: u32) {
     for b in 0..size {
-        values[(start + b) as usize] = ConstMemValue::Unknown;
+        values[(dst + b) as usize] = MemValue::CopyMem(src + b);
     }
 }
 
-fn get_const_mem_values(values: &Vec<ConstMemValue>,
-                        start: u32, size: u32) -> Option<i32> {
+fn destroy_mem_copy_values(values: &mut Vec<MemValue>,
+                           start: u32, size: u32) {
+    for val in values.iter_mut() {
+        if let MemValue::CopyMem(byte) = val {
+            if *byte >= start && (*byte - start) < size {
+                *val = MemValue::ManyValues;
+            }
+        }
+    }
+}
+
+fn get_const_mem_value(values: &Vec<MemValue>,
+                       start: u32, size: u32) -> Option<i32> {
     let mut x = 0u32;
     for b in 0..size {
-        if let ConstMemValue::Constant(x_byte) = values[(start + b) as usize] {
+        if let MemValue::Constant(x_byte) = values[(start + b) as usize] {
             x |= (x_byte as u32) << (b * 8);
         } else {
             return None;
@@ -233,25 +272,49 @@ fn get_const_mem_values(values: &Vec<ConstMemValue>,
     Some(x as i32)
 }
 
-fn update_const_mem_values_for_instr(values: &mut Vec<ConstMemValue>,
-                                     instr: &ir::Instruction, merge: bool) {
+fn get_copy_mem_value(values: &Vec<MemValue>,
+                      start: u32, size: u32) -> Option<u32> {
+    if let MemValue::CopyMem(byte_0) = values[start as usize] {
+        for n in 1..size {
+            if let MemValue::CopyMem(byte_n) = values[(start + n) as usize] {
+                if byte_n != byte_0 + n {
+                    return None;
+                }
+            } else {
+                return None;
+            }
+        }
+        Some(byte_0)
+    } else {
+        None
+    }
+}
+
+fn update_const_mem_values_for_instr(values: &mut Vec<MemValue>,
+                                     instr: &ir::Instruction,
+                                     block_local: bool) {
     match instr.op {
         ir::Opcode::Move8_8 |
         ir::Opcode::Move16_16 |
         ir::Opcode::Move32_32 |
         ir::Opcode::MoveF_F => {
             debug_assert!(instr.params.len() == 2);
-            if let ir::ParamValue::Local(byte) = instr.params[1].value {
+            if let ir::ParamValue::Local(dst) = instr.params[1].value {
                 let size = instr.params[1].param_type.data_type().size();
                 if let ir::ParamValue::Constant(x) = instr.params[0].value {
-                    if merge {
-                        merge_const_mem_values_i32(values, byte, size, x);
+                    if block_local {
+                        set_mem_values_const_i32(values, dst, size, x);
                     } else {
-                        set_const_mem_values_i32(values, byte, size, x);
+                        merge_mem_values_const_i32(values, dst, size, x);
+                    }
+                } else if block_local {
+                    if let ir::ParamValue::Local(src) = instr.params[0].value {
+                        set_mem_values_copy_mem(values, dst, size, src);
                     }
                 } else {
-                    set_const_mem_values_unknown(values, byte, size);
+                    merge_mem_values_unknown(values, dst, size);
                 }
+                destroy_mem_copy_values(values, dst, size);
             }
         },
         _ => {
@@ -265,7 +328,8 @@ fn update_const_mem_values_for_instr(values: &mut Vec<ConstMemValue>,
                 if let ir::ParamType::Output(_) = param.param_type {
                     if let ir::ParamValue::Local(byte) = param.value {
                         let size = param.param_type.data_type().size();
-                        set_const_mem_values_unknown(values, byte, size);
+                        merge_mem_values_unknown(values, byte, size);
+                        destroy_mem_copy_values(values, byte, size);
                     }
                 }
             }
@@ -273,15 +337,15 @@ fn update_const_mem_values_for_instr(values: &mut Vec<ConstMemValue>,
     }
 }
 
-pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
+pub fn copy_propagation_obj(obj: &mut ir::Object) -> bool {
     /* This pass assumes we have basic blocks */
     assert!(obj.instrs.is_empty());
 
     let mut obj_values = vec![];
-    obj_values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
+    obj_values.resize(obj.local_bytes as usize, MemValue::Unwritten);
 
     for instr in obj.iter_instrs() {
-        update_const_mem_values_for_instr(&mut obj_values, instr, true);
+        update_const_mem_values_for_instr(&mut obj_values, instr, false);
     }
 
     let mut progress = false;
@@ -292,19 +356,23 @@ pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
          * than having to turn any multi-write into Unknown
          */
         let mut block_values = vec![];
-        block_values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
+        block_values.resize(obj.local_bytes as usize, MemValue::Unwritten);
 
         for instr in block.instrs.iter_mut() {
             for param in instr.params.iter_mut() {
                 if let ir::ParamType::Input(_) = param.param_type {
                     if let ir::ParamValue::Local(byte) = param.value {
                         let size = param.param_type.data_type().size();
-                        if let Some(x) = get_const_mem_values(&block_values,
-                                                              byte, size) {
+                        if let Some(x) = get_const_mem_value(&block_values,
+                                                             byte, size) {
                             param.value = ir::ParamValue::Constant(x);
                             progress = true;
-                        } else if let Some(x) = get_const_mem_values(&obj_values,
-                                                                     byte, size) {
+                        } else if let Some(x) = get_copy_mem_value(&block_values,
+                                                                   byte, size) {
+                            param.value = ir::ParamValue::Local(x);
+                            progress = true;
+                        } else if let Some(x) = get_const_mem_value(&obj_values,
+                                                                    byte, size) {
                             param.value = ir::ParamValue::Constant(x);
                             progress = true;
                         }
@@ -317,7 +385,7 @@ pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
              * We don't need to merge in this case because we're not worried
              * about control-flow issues within a single basic block.
              */
-            update_const_mem_values_for_instr(&mut block_values, instr, false);
+            update_const_mem_values_for_instr(&mut block_values, instr, true);
         }
     }
 
