@@ -139,9 +139,13 @@ pub fn dead_code_obj(obj: &mut ir::Object) -> bool {
     let mut progress = false;
     for instr in obj.iter_instrs_mut() {
         if !instr_is_live(instr, &live) {
-            instr.op = ir::Opcode::Nop;
-            instr.params.clear();
-            progress = true;
+            if let ir::Opcode::Nop = instr.op {
+                /* Don't record progress for Nops already in the program */
+            } else {
+                instr.op = ir::Opcode::Nop;
+                instr.params.clear();
+                progress = true;
+            }
         }
     }
     progress

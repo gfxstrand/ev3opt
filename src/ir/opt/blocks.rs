@@ -192,7 +192,7 @@ pub fn clear_dead_blocks_obj(obj: &mut ir::Object) -> bool {
 
     let mut progress = false;
     for idx in 0..num_blocks {
-        if !live[idx] {
+        if !live[idx] && !obj.blocks[idx].instrs.is_empty() {
             obj.blocks[idx].instrs.clear();
             progress = true;
         }

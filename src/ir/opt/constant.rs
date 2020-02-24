@@ -80,23 +80,23 @@ pub fn constant_fold_obj(obj: &mut ir::Object) -> bool {
             Rl16 =>           (p[0].to_i16() << p[1].to_i16()) as i32,
             Rl32 =>            p[0].to_i32() << p[1].to_i32(),
 
-            /* Move (and data convert) instructions */
-            Move8_8 =>             p[0].to_i8() as i32,
+            /* Move (and data convert) instructions
+             *
+             * Note: We don't handle any non-converting Move instructions here
+             * because that can lead to infinite optimization loops.
+             */
             Move8_16 =>            p[0].to_i8() as i32,
             Move8_32 =>            p[0].to_i8() as i32,
             Move8_F =>  f32_as_i32(p[0].to_i8() as f32),
             Move16_8 =>            p[0].to_i16() as i8 as i32,
-            Move16_16 =>           p[0].to_i16() as i32,
             Move16_32 =>           p[0].to_i16() as i32,
             Move16_F => f32_as_i32(p[0].to_i16() as f32),
             Move32_8 =>            p[0].to_i32() as i8 as i32,
             Move32_16 =>           p[0].to_i32() as i16 as i32,
-            Move32_32 =>           p[0].to_i32(),
             Move32_F => f32_as_i32(p[0].to_i32() as f32),
             MoveF_8 =>             p[0].to_f32() as i8 as i32,
             MoveF_16 =>            p[0].to_f32() as i16 as i32,
             MoveF_32 =>            p[0].to_f32() as i32,
-            MoveF_F =>             p[0].to_i32(), /* No conversion */
 
             /* Jump instructions.  0 => Nop, else => Jr */
             JrFalse => (!p[0].to_bool()) as i32,
