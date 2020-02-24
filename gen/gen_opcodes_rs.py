@@ -52,19 +52,19 @@ class Opcode(object):
             if c == 'b':
                 data_type = 'Int8'
             elif c == 'b+':
-                data_type = 'Int8Array'
+                data_type = 'Int8Array(0)'
             elif c == 'w':
                 data_type = 'Int16'
             elif c == 'w+':
-                data_type = 'Int16Array'
+                data_type = 'Int16Array(0)'
             elif c == 'd':
                 data_type = 'Int32'
             elif c == 'd+':
-                data_type = 'Int32Array'
+                data_type = 'Int32Array(0)'
             elif c == 'f':
                 data_type = 'Float'
             elif c == 'f+':
-                data_type = 'FloatArray'
+                data_type = 'FloatArray(0)'
             elif c == 's':
                 data_type = 'String(0)'
             elif c == 'h':

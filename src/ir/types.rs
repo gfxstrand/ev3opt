@@ -29,10 +29,10 @@ pub enum DataType {
     Int16,
     Int32,
     Float,
-    Int8Array,
-    Int16Array,
-    Int32Array,
-    FloatArray,
+    Int8Array(u8), /* 0 for unknown */
+    Int16Array(u8), /* 0 for unknown */
+    Int32Array(u8), /* 0 for unknown */
+    FloatArray(u8), /* 0 for unknown */
     String(u8), /* Strings may have a size; 0 for unknown */
     Handle,
 }
@@ -40,10 +40,10 @@ pub enum DataType {
 impl DataType {
     pub fn without_array(&self) -> DataType {
         match self {
-            DataType::Int8Array => DataType::Int8,
-            DataType::Int16Array => DataType::Int16,
-            DataType::Int32Array => DataType::Int32,
-            DataType::FloatArray => DataType::Float,
+            DataType::Int8Array(_) => DataType::Int8,
+            DataType::Int16Array(_) => DataType::Int16,
+            DataType::Int32Array(_) => DataType::Int32,
+            DataType::FloatArray(_) => DataType::Float,
             DataType::String(_) => DataType::Int8,
             _ => *self,
         }
@@ -56,15 +56,15 @@ impl DataType {
             DataType::Int32 => 4,
             DataType::Float => 4,
             DataType::Handle => 4,
-            DataType::Int8Array => u32::max_value(),
-            DataType::Int16Array => u32::max_value(),
-            DataType::Int32Array => u32::max_value(),
-            DataType::FloatArray => u32::max_value(),
+            DataType::Int8Array(len) |
+            DataType::Int16Array(len) |
+            DataType::Int32Array(len) |
+            DataType::FloatArray(len) |
             DataType::String(len) => {
                 if *len == 0 {
                     u32::max_value()
                 } else {
-                    *len as u32
+                    *len as u32 * self.without_array().size()
                 }
             },
         }
@@ -81,10 +81,15 @@ impl fmt::Display for DataType {
             DataType::Int16 => write!(f, "i16"),
             DataType::Int32 => write!(f, "i32"),
             DataType::Float => write!(f, "f"),
-            DataType::Int8Array => write!(f, "i8[]"),
-            DataType::Int16Array => write!(f, "i16[]"),
-            DataType::Int32Array => write!(f, "i32[]"),
-            DataType::FloatArray => write!(f, "f[]"),
+            DataType::Int8Array(len) |
+            DataType::Int16Array(len) |
+            DataType::Int32Array(len) |
+            DataType::FloatArray(len) =>
+                if *len == 0 {
+                    write!(f, "{}[]", self.without_array())
+                } else {
+                    write!(f, "{}[{}]", self.without_array(), *len)
+                }
             DataType::String(len) =>
                 if *len == 0 {
                     write!(f, "str")

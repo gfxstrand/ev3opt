@@ -2301,7 +2301,7 @@ impl Opcode {
             Opcode::Rl32 =>
                 &[ Input(Int32), Input(Int32), Output(Int32) ],
             Opcode::InitBytes =>
-                &[ Input(Int32), Input(Int8Array), Output(Int8Array) ],
+                &[ Input(Int32), Input(Int8Array(0)), Output(Int8Array(0)) ],
             Opcode::Move8_8 =>
                 &[ Input(Int8), Output(Int8) ],
             Opcode::Move8_16 =>
@@ -2495,9 +2495,9 @@ impl Opcode {
                     &[ Input(Int32), Input(Int8), Input(Int8), Output(String(0)) ],
             },
             Opcode::MemoryWrite =>
-                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Input(Int8Array) ],
+                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Input(Int8Array(0)) ],
             Opcode::MemoryRead =>
-                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Output(Int8Array) ],
+                &[ Input(Int16), Input(Int16), Input(Int32), Input(Int32), Output(Int8Array(0)) ],
             Opcode::UiFlush =>
                 &[  ],
             Opcode::UiRead(subcode) => match subcode {
@@ -2506,7 +2506,7 @@ impl Opcode {
                 UiReadSubcode::GET_IBATT =>
                     &[ Output(Float) ],
                 UiReadSubcode::GET_OS_VERS =>
-                    &[ Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_EVENT =>
                     &[ Output(Int8) ],
                 UiReadSubcode::GET_TBATT =>
@@ -2514,15 +2514,15 @@ impl Opcode {
                 UiReadSubcode::GET_IMOTOR =>
                     &[ Output(Float) ],
                 UiReadSubcode::GET_STRING =>
-                    &[ Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_HW_VERS =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_FW_VERS =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_FW_BUILD =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_OS_BUILD =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_ADDRESS =>
                     &[ Input(Int32) ],
                 UiReadSubcode::GET_CODE =>
@@ -2536,11 +2536,11 @@ impl Opcode {
                 UiReadSubcode::GET_LBATT =>
                     &[ Output(Int8) ],
                 UiReadSubcode::TEXTBOX_READ =>
-                    &[ Input(String(0)), Input(Int32), Input(Int8), Input(Int8), Input(Int16), Output(Int8Array) ],
+                    &[ Input(String(0)), Input(Int32), Input(Int8), Input(Int8), Input(Int16), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_VERSION =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_IP =>
-                    &[ Input(Int32), Output(Int8Array) ],
+                    &[ Input(Int32), Output(Int8Array(0)) ],
                 UiReadSubcode::GET_SDCARD =>
                     &[ Output(Int8), Output(Int32), Output(Int32) ],
                 UiReadSubcode::GET_USBSTICK =>
@@ -2640,9 +2640,9 @@ impl Opcode {
                 UiDrawSubcode::QUESTION =>
                     &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(String(0)), Input(Int8), Output(Int8) ],
                 UiDrawSubcode::KEYBOARD =>
-                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 UiDrawSubcode::BROWSE =>
-                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int8), Output(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int8), Output(Int8), Output(Int8Array(0)) ],
                 UiDrawSubcode::VERTBAR =>
                     &[ Input(Int8), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16), Input(Int16) ],
                 UiDrawSubcode::INVERSERECT =>
@@ -2757,7 +2757,7 @@ impl Opcode {
             Opcode::SoundReady =>
                 &[  ],
             Opcode::InputDeviceList =>
-                &[ Input(Int8), Input(Int8Array), Input(Int8) ],
+                &[ Input(Int8), Input(Int8Array(0)), Input(Int8) ],
             Opcode::InputDevice(subcode) => match subcode {
                 InputDeviceSubcode::GET_FORMAT =>
                     &[ Input(Int8), Input(Int8), Output(Int8), Output(Int8), Output(Int8), Output(Int8) ],
@@ -2794,11 +2794,11 @@ impl Opcode {
                 InputDeviceSubcode::CLR_CHANGES =>
                     &[ Input(Int8), Input(Int8) ],
                 InputDeviceSubcode::READY_PCT =>
-                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 InputDeviceSubcode::READY_RAW =>
-                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array) ],
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array(0)) ],
                 InputDeviceSubcode::READY_SI =>
-                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(FloatArray) ],
+                    &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(FloatArray(0)) ],
                 InputDeviceSubcode::GET_MINMAX =>
                     &[ Input(Int8), Input(Int8), Output(Float), Output(Float) ],
                 InputDeviceSubcode::GET_BUMPS =>
@@ -2813,9 +2813,9 @@ impl Opcode {
             Opcode::InputReadSi =>
                 &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Float) ],
             Opcode::InputReadExt =>
-                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array) ],
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Input(Int8), Output(Int32Array(0)) ],
             Opcode::InputWrite =>
-                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8Array) ],
+                &[ Input(Int8), Input(Int8), Input(Int8), Input(Int8Array(0)) ],
             Opcode::OutputSetType =>
                 &[ Input(Int8), Input(Int8), Input(Int8) ],
             Opcode::OutputReset =>
@@ -2866,7 +2866,7 @@ impl Opcode {
                 FileSubcode::WRITE_VALUE =>
                     &[ Input(Handle), Output(Int8), Output(Float), Output(Int8), Output(Int8) ],
                 FileSubcode::READ_TEXT =>
-                    &[ Input(Handle), Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Handle), Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 FileSubcode::WRITE_TEXT =>
                     &[ Input(Handle), Input(Int8), Input(String(0)) ],
                 FileSubcode::CLOSE =>
@@ -2886,7 +2886,7 @@ impl Opcode {
                 FileSubcode::GET_LOG_SYNC_TIME =>
                     &[ Input(Int32), Input(Int32) ],
                 FileSubcode::GET_SUBFOLDER_NAME =>
-                    &[ Input(String(0)), Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(String(0)), Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 FileSubcode::WRITE_LOG =>
                     &[ Input(Handle), Input(Int32), Input(Int8), Input(Float) ],
                 FileSubcode::CLOSE_LOG =>
@@ -2900,9 +2900,9 @@ impl Opcode {
                 FileSubcode::PUT_CACHE_FILE =>
                     &[ Input(String(0)) ],
                 FileSubcode::GET_CACHE_FILE =>
-                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 FileSubcode::DEL_CACHE_FILE =>
-                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 FileSubcode::DEL_SUBFOLDER =>
                     &[ Input(String(0)), Input(Int8) ],
                 FileSubcode::GET_LOG_NAME =>
@@ -2910,9 +2910,9 @@ impl Opcode {
                 FileSubcode::OPEN_LOG =>
                     &[ Input(String(0)), Input(Int32), Input(Int32), Input(Int32), Input(Int32), Input(Int32), Input(String(0)), Output(Handle) ],
                 FileSubcode::READ_BYTES =>
-                    &[ Input(Handle), Input(Int16), Output(Int8Array) ],
+                    &[ Input(Handle), Input(Int16), Output(Int8Array(0)) ],
                 FileSubcode::WRITE_BYTES =>
-                    &[ Input(Handle), Input(Int16), Input(Int8Array) ],
+                    &[ Input(Handle), Input(Int16), Input(Int8Array(0)) ],
                 FileSubcode::REMOVE =>
                     &[ Input(Handle) ],
                 FileSubcode::MOVE =>
@@ -2936,19 +2936,19 @@ impl Opcode {
                 ArraySubcode::COPY =>
                     &[ Input(Handle), Input(Handle) ],
                 ArraySubcode::INIT8 =>
-                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int8Array) ],
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int8Array(0)) ],
                 ArraySubcode::INIT16 =>
-                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int16Array) ],
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int16Array(0)) ],
                 ArraySubcode::INIT32 =>
-                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int32Array) ],
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(Int32Array(0)) ],
                 ArraySubcode::INITF =>
-                    &[ Input(Handle), Input(Int32), Input(Int32), Input(FloatArray) ],
+                    &[ Input(Handle), Input(Int32), Input(Int32), Input(FloatArray(0)) ],
                 ArraySubcode::SIZE =>
                     &[ Input(Handle), Output(Int32) ],
                 ArraySubcode::READ_CONTENT =>
-                    &[ Input(Handle), Input(Int32), Input(Int32), Output(Int8Array) ],
+                    &[ Input(Handle), Input(Int32), Input(Int32), Output(Int8Array(0)) ],
                 ArraySubcode::WRITE_CONTENT =>
-                    &[ Input(Int16), Input(Handle), Input(Int32), Input(Int32), Input(Int8Array) ],
+                    &[ Input(Int16), Input(Handle), Input(Int32), Input(Int32), Input(Int8Array(0)) ],
                 ArraySubcode::READ_SIZE =>
                     &[ Input(Int16), Input(Handle), Output(Int32) ],
             },
@@ -2966,9 +2966,9 @@ impl Opcode {
                 FilenameSubcode::TOTALSIZE =>
                     &[ Input(String(0)), Output(Int32), Output(Int32) ],
                 FilenameSubcode::SPLIT =>
-                    &[ Input(String(0)), Input(Int8), Input(String(0)), Output(Int8Array), Output(Int8Array) ],
+                    &[ Input(String(0)), Input(Int8), Input(String(0)), Output(Int8Array(0)), Output(Int8Array(0)) ],
                 FilenameSubcode::MERGE =>
-                    &[ Input(String(0)), Input(String(0)), Input(String(0)), Input(Int8), Output(Int8Array) ],
+                    &[ Input(String(0)), Input(String(0)), Input(String(0)), Input(Int8), Output(Int8Array(0)) ],
                 FilenameSubcode::CHECK =>
                     &[ Input(String(0)), Output(Int8) ],
                 FilenameSubcode::PACK =>
@@ -2976,24 +2976,24 @@ impl Opcode {
                 FilenameSubcode::UNPACK =>
                     &[ Input(String(0)) ],
                 FilenameSubcode::GET_FOLDERNAME =>
-                    &[ Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Output(Int8Array(0)) ],
             },
             Opcode::Read8 =>
-                &[ Input(Int8Array), Input(Int8), Output(Int8) ],
+                &[ Input(Int8Array(0)), Input(Int8), Output(Int8) ],
             Opcode::Read16 =>
-                &[ Input(Int16Array), Input(Int8), Output(Int16) ],
+                &[ Input(Int16Array(0)), Input(Int8), Output(Int16) ],
             Opcode::Read32 =>
-                &[ Input(Int32Array), Input(Int8), Output(Int32) ],
+                &[ Input(Int32Array(0)), Input(Int8), Output(Int32) ],
             Opcode::Readf =>
-                &[ Input(FloatArray), Input(Int8), Output(Float) ],
+                &[ Input(FloatArray(0)), Input(Int8), Output(Float) ],
             Opcode::Write8 =>
-                &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                &[ Input(Int8), Input(Int8), Output(Int8Array(0)) ],
             Opcode::Write16 =>
-                &[ Input(Int16), Input(Int8), Output(Int16Array) ],
+                &[ Input(Int16), Input(Int8), Output(Int16Array(0)) ],
             Opcode::Write32 =>
-                &[ Input(Int32), Input(Int8), Output(Int32Array) ],
+                &[ Input(Int32), Input(Int8), Output(Int32Array(0)) ],
             Opcode::Writef =>
-                &[ Input(Float), Input(Int8), Output(FloatArray) ],
+                &[ Input(Float), Input(Int8), Output(FloatArray(0)) ],
             Opcode::ComReady =>
                 &[ Input(Int8), Input(Int8) ],
             Opcode::ComGet(subcode) => match subcode {
@@ -3008,23 +3008,23 @@ impl Opcode {
                 ComGetSubcode::SEARCH_ITEMS =>
                     &[ Input(Int8), Output(Int8) ],
                 ComGetSubcode::SEARCH_ITEM =>
-                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array), Output(Int8), Output(Int8), Output(Int8), Output(Int8) ],
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array(0)), Output(Int8), Output(Int8), Output(Int8), Output(Int8) ],
                 ComGetSubcode::FAVOUR_ITEMS =>
                     &[ Input(Int8), Output(Int8) ],
                 ComGetSubcode::FAVOUR_ITEM =>
-                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array), Output(Int8), Output(Int8), Output(Int8) ],
+                    &[ Input(Int8), Input(Int8), Input(Int8), Output(Int8Array(0)), Output(Int8), Output(Int8), Output(Int8) ],
                 ComGetSubcode::GET_ID =>
-                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Output(Int8Array(0)) ],
                 ComGetSubcode::GET_BRICKNAME =>
-                    &[ Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Output(Int8Array(0)) ],
                 ComGetSubcode::GET_NETWORK =>
-                    &[ Input(Int8), Input(Int8), Output(Int8Array), Output(Int8Array), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Output(Int8Array(0)), Output(Int8Array(0)), Output(Int8Array(0)) ],
                 ComGetSubcode::GET_PRESENT =>
                     &[ Input(Int8), Output(Int8) ],
                 ComGetSubcode::GET_ENCRYPT =>
                     &[ Input(Int8), Input(Int8), Output(Int8) ],
                 ComGetSubcode::GET_INCOMING =>
-                    &[ Input(Int8), Input(Int8), Output(Int8Array) ],
+                    &[ Input(Int8), Input(Int8), Output(Int8Array(0)) ],
             },
             Opcode::ComSet(subcode) => match subcode {
                 ComSetSubcode::SET_ON_OFF =>
