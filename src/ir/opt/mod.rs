@@ -28,24 +28,47 @@ mod dead_code;
 mod memory;
 mod subcall;
 
-pub fn optimize_obj(obj: &mut ir::Object) {
+pub fn optimize_obj(obj: &mut ir::Object) -> bool{
     blocks::flat_to_blocks_obj(obj);
-    memory::constant_propagation_obj(obj);
-    constant::constant_fold_obj(obj);
-    blocks::clear_dead_blocks_obj(obj);
-    dead_code::dead_code_obj(obj);
-    dead_code::remove_nops_obj(obj);
+
+    let mut progress = false;
+    loop {
+        let mut p = false;
+        p |= memory::constant_propagation_obj(obj);
+        p |= constant::constant_fold_obj(obj);
+        p |= blocks::clear_dead_blocks_obj(obj);
+        p |= dead_code::dead_code_obj(obj);
+        p |= dead_code::remove_nops_obj(obj);
+
+        if p {
+            progress = true;
+        } else {
+            break;
+        }
+    }
+
     blocks::blocks_to_flat_obj(obj);
+
+    progress
 }
 
-pub fn optimize(image: &mut ir::Image) {
-    memory::global_to_local(image);
-    for obj in image.objects.iter_mut() {
-        optimize_obj(obj);
+pub fn optimize(image: &mut ir::Image) -> bool{
+    let mut progress = false;
+    loop {
+        let mut p = false;
+        p |= memory::global_to_local(image);
+        for obj in image.objects.iter_mut() {
+            p |= optimize_obj(obj);
+        }
+        p |= subcall::inline_subcalls(image);
+        p |= subcall::remove_dead_subcalls(image);
+
+        if p {
+            progress = true;
+        } else {
+            break;
+        }
     }
-    subcall::inline_subcalls(image);
-    subcall::remove_dead_subcalls(image);
-    for obj in image.objects.iter_mut() {
-        optimize_obj(obj);
-    }
+
+    progress
 }
