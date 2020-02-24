@@ -49,6 +49,7 @@ pub fn optimize_obj(obj: &mut ir::Object) -> bool{
         }
     }
 
+    blocks::remove_trivial_jumps_obj(obj);
     blocks::blocks_to_flat_obj(obj);
 
     progress

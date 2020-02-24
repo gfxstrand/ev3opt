@@ -131,6 +131,36 @@ pub fn blocks_to_flat_obj(obj: &mut ir::Object) {
     }
 }
 
+fn instr_get_jr_block_id(instr: &ir::Instruction) -> Option<u32> {
+    for param in instr.params.iter() {
+        if let ir::ParamType::BlockID = param.param_type {
+            return Some(param.to_u32());
+        }
+    }
+    None
+}
+
+pub fn remove_trivial_jumps_obj(obj: &mut ir::Object) {
+    assert!(obj.instrs.is_empty());
+
+    debug_assert!(!obj.blocks.last().unwrap().instrs.is_empty());
+    let mut last_block_id = std::u32::MAX;
+    for block in obj.blocks.iter_mut().rev() {
+        if let Some(last) = block.instrs.last_mut() {
+            if let Some(id) = instr_get_jr_block_id(last) {
+                if id == last_block_id {
+                    last.op = ir::Opcode::Nop;
+                    last.params = vec![];
+                }
+            }
+        }
+
+        if !block.instrs.is_empty() {
+            last_block_id = block.id;
+        }
+    }
+}
+
 pub fn clear_dead_blocks_obj(obj: &mut ir::Object) -> bool {
     assert!(obj.instrs.is_empty());
 
