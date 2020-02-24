@@ -219,7 +219,21 @@ impl fmt::Display for Parameter {
         match &self.value {
             ParamValue::Local(i) => write!(f, "local+{}", i)?,
             ParamValue::Global(i) => write!(f, "global+{}", i)?,
-            ParamValue::Constant(x) => write!(f, "{}", x)?,
+            ParamValue::Constant(x) => {
+                match self.param_type {
+                    ParamType::Input(data_type) |
+                    ParamType::Output(data_type) => {
+                        if let ir::DataType::Float = data_type.without_array() {
+                            write!(f, "{}f", self.to_f32())?;
+                        } else {
+                            write!(f, "{}", x)?;
+                        }
+                    },
+                    ParamType::Offset |
+                    ParamType::IP |
+                    ParamType::BlockID => write!(f, "{}", x)?,
+                }
+            },
             ParamValue::String(v) => {
                 match std::string::String::from_utf8(v.to_vec()) {
                     Ok(s) => write!(f, "\"{}\"", s)?,
