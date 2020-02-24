@@ -142,6 +142,21 @@ pub struct Parameter {
 }
 
 impl Parameter {
+    #[inline]
+    pub fn to_i8(&self) -> i8 {
+        self.to_i32() as i8
+    }
+
+    pub fn to_bool(&self) -> bool {
+        self.to_i8() != 0
+    }
+
+    #[inline]
+    pub fn to_i16(&self) -> i16 {
+        self.to_i32() as i16
+    }
+
+    #[inline]
     pub fn to_i32(&self) -> i32 {
         match self.value {
             ParamValue::Constant(x) => x,
@@ -149,6 +164,12 @@ impl Parameter {
         }
     }
 
+    #[inline]
+    pub fn to_f32(&self) -> f32 {
+        f32::from_le_bytes(self.to_i32().to_le_bytes())
+    }
+
+    #[inline]
     pub fn to_u32(&self) -> u32 {
         self.to_i32() as u32
     }
