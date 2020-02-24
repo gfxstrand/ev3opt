@@ -187,20 +187,17 @@ enum ConstMemValue {
     Constant(u8),
 }
 
-impl ConstMemValue {
-    pub fn set_value(&mut self, other: ConstMemValue) {
-        match other {
-            ConstMemValue::Undefined => panic!("Cannot set undefined"),
-            ConstMemValue::Unknown => *self = ConstMemValue::Unknown,
-            ConstMemValue::Constant(x) => {
-                match self {
-                    ConstMemValue::Undefined => *self = other,
-                    ConstMemValue::Unknown => {},
-                    ConstMemValue::Constant(y) => {
-                        if *y != x {
-                            *self = ConstMemValue::Unknown;
-                        }
-                    },
+fn merge_const_mem_values_i32(values: &mut Vec<ConstMemValue>,
+                              start: u32, size: u32, x: i32) {
+    for b in 0..size {
+        let x_byte = ((x as u32) >> (b * 8)) as u8;
+        let val = &mut values[(start + b) as usize];
+        match val {
+            ConstMemValue::Undefined => *val = ConstMemValue::Constant(x_byte),
+            ConstMemValue::Unknown => {},
+            ConstMemValue::Constant(y_byte) => {
+                if x_byte != *y_byte {
+                    *val = ConstMemValue::Unknown;
                 }
             },
         }
@@ -211,15 +208,15 @@ fn set_const_mem_values_i32(values: &mut Vec<ConstMemValue>,
                             start: u32, size: u32, x: i32) {
     for b in 0..size {
         let x_byte = ((x as u32) >> (b * 8)) as u8;
-        values[(start + b) as usize].set_value(ConstMemValue::Constant(x_byte));
+        values[(start + b) as usize] = ConstMemValue::Constant(x_byte);
     }
 }
 
 fn set_const_mem_values_unknown(values: &mut Vec<ConstMemValue>,
-                                start: u32, size: u32) {
+                                  start: u32, size: u32) {
     let size = cmp::min(size, values.len() as u32 - start);
     for b in 0..size {
-        values[(start + b) as usize].set_value(ConstMemValue::Unknown);
+        values[(start + b) as usize] = ConstMemValue::Unknown;
     }
 }
 
@@ -236,61 +233,91 @@ fn get_const_mem_values(values: &Vec<ConstMemValue>,
     Some(x as i32)
 }
 
+fn update_const_mem_values_for_instr(values: &mut Vec<ConstMemValue>,
+                                     instr: &ir::Instruction, merge: bool) {
+    match instr.op {
+        ir::Opcode::Move8_8 |
+        ir::Opcode::Move16_16 |
+        ir::Opcode::Move32_32 |
+        ir::Opcode::MoveF_F => {
+            debug_assert!(instr.params.len() == 2);
+            if let ir::ParamValue::Local(byte) = instr.params[1].value {
+                let size = instr.params[1].param_type.data_type().size();
+                if let ir::ParamValue::Constant(x) = instr.params[0].value {
+                    if merge {
+                        merge_const_mem_values_i32(values, byte, size, x);
+                    } else {
+                        set_const_mem_values_i32(values, byte, size, x);
+                    }
+                } else {
+                    set_const_mem_values_unknown(values, byte, size);
+                }
+            }
+        },
+        _ => {
+            /* Anything else we consider an unknown write.  We could
+             * potentially handle more Move instructions here but they
+             * will get handled by constant_folding and it saves us
+             * complexity if we don't have to think about truncation and
+             * sign-extension here.
+             */
+            for param in instr.params.iter() {
+                if let ir::ParamType::Output(_) = param.param_type {
+                    if let ir::ParamValue::Local(byte) = param.value {
+                        let size = param.param_type.data_type().size();
+                        set_const_mem_values_unknown(values, byte, size);
+                    }
+                }
+            }
+        },
+    }
+}
+
 pub fn constant_propagation_obj(obj: &mut ir::Object) -> bool {
-    let mut values = vec![];
-    values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
+    /* This pass assumes we have basic blocks */
+    assert!(obj.instrs.is_empty());
+
+    let mut obj_values = vec![];
+    obj_values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
 
     for instr in obj.iter_instrs() {
-        match instr.op {
-            ir::Opcode::Move8_8 |
-            ir::Opcode::Move16_16 |
-            ir::Opcode::Move32_32 |
-            ir::Opcode::MoveF_F => {
-                debug_assert!(instr.params.len() == 2);
-                if let ir::ParamValue::Local(byte) = instr.params[1].value {
-                    let size = instr.params[1].param_type.data_type().size();
-                    if let ir::ParamValue::Constant(x) = instr.params[0].value {
-                        set_const_mem_values_i32(&mut values, byte, size, x);
-                    } else {
-                        set_const_mem_values_unknown(&mut values, byte, size);
-                    }
-                }
-            },
-            _ => {
-                /* Anything else we consider an unknown write.  We could
-                 * potentially handle more Move instructions here but they
-                 * will get handled by constant_folding and it saves us
-                 * complexity if we don't have to think about truncation and
-                 * sign-extension here.
-                 */
-                for param in instr.params.iter() {
-                    if let ir::ParamType::Output(_) = param.param_type {
-                        if let ir::ParamValue::Local(byte) = param.value {
-                            let size = param.param_type.data_type().size();
-                            set_const_mem_values_unknown(&mut values, byte, size);
-                        }
-                    }
-                }
-            },
-        }
+        update_const_mem_values_for_instr(&mut obj_values, instr, true);
     }
 
     let mut progress = false;
 
-    for instr in obj.iter_instrs_mut() {
-        for param in instr.params.iter_mut() {
-            if let ir::ParamType::Input(_) = param.param_type {
-                if let ir::ParamValue::Local(byte) = param.value {
-                    let size = param.param_type.data_type().size();
-                    match get_const_mem_values(&values, byte, size) {
-                        Some(x) => {
+    for block in obj.blocks.iter_mut() {
+        /* Within a single basic block, we can do more accurate tracking
+         * because we can track only the most recently written values rather
+         * than having to turn any multi-write into Unknown
+         */
+        let mut block_values = vec![];
+        block_values.resize(obj.local_bytes as usize, ConstMemValue::Undefined);
+
+        for instr in block.instrs.iter_mut() {
+            for param in instr.params.iter_mut() {
+                if let ir::ParamType::Input(_) = param.param_type {
+                    if let ir::ParamValue::Local(byte) = param.value {
+                        let size = param.param_type.data_type().size();
+                        if let Some(x) = get_const_mem_values(&block_values,
+                                                              byte, size) {
                             param.value = ir::ParamValue::Constant(x);
                             progress = true;
-                        },
-                        None => {},
+                        } else if let Some(x) = get_const_mem_values(&obj_values,
+                                                                     byte, size) {
+                            param.value = ir::ParamValue::Constant(x);
+                            progress = true;
+                        }
                     }
                 }
             }
+
+            /* After we've processed this instruction and filled out any
+             * constant sources, try to add it to the block-local values list.
+             * We don't need to merge in this case because we're not worried
+             * about control-flow issues within a single basic block.
+             */
+            update_const_mem_values_for_instr(&mut block_values, instr, false);
         }
     }
 
