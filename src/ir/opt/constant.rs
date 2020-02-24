@@ -43,6 +43,7 @@ pub fn constant_fold_obj(obj: &mut ir::Object) -> bool {
     let mut progress = false;
 
     use ir::Opcode::*;
+    use ir::opcodes::MathSubcode::*;
     for instr in obj.iter_instrs_mut() {
         if !has_constant_inputs(instr) {
             continue;
@@ -134,6 +135,31 @@ pub fn constant_fold_obj(obj: &mut ir::Object) -> bool {
             Select16 => (if p[0].to_bool() { p[1].to_i16() } else { p[2].to_i16() }) as i32,
             Select32 => (if p[0].to_bool() { p[1].to_i32() } else { p[2].to_i32() }) as i32,
             SelectF =>  (if p[0].to_bool() { p[1].to_i32() } else { p[2].to_i32() }) as i32,
+
+            Math(subcode) => match subcode {
+                EXP =>    f32_as_i32(p[0].to_f32().exp()),
+                MOD =>    f32_as_i32(p[0].to_f32() % p[1].to_f32()),
+                FLOOR =>  f32_as_i32(p[0].to_f32().floor()),
+                CEIL =>   f32_as_i32(p[0].to_f32().ceil()),
+                ROUND =>  f32_as_i32(p[0].to_f32().round()),
+                ABS =>    f32_as_i32(p[0].to_f32().abs()),
+                NEGATE => f32_as_i32(-p[0].to_f32()),
+                SQRT =>   f32_as_i32(p[0].to_f32().sqrt()),
+                LOG =>    f32_as_i32(p[0].to_f32().log10()),
+                LN =>     f32_as_i32(p[0].to_f32().ln()),
+                SIN =>    f32_as_i32(p[0].to_f32().sin()),
+                COS =>    f32_as_i32(p[0].to_f32().cos()),
+                TAN =>    f32_as_i32(p[0].to_f32().tan()),
+                ASIN =>   f32_as_i32(p[0].to_f32().asin()),
+                ACOS =>   f32_as_i32(p[0].to_f32().acos()),
+                ATAN =>   f32_as_i32(p[0].to_f32().atan()),
+                MOD8 =>   (p[0].to_i8() % p[1].to_i8()) as i32,
+                MOD16 =>  (p[0].to_i16() % p[1].to_i16()) as i32,
+                MOD32 =>  (p[0].to_i32() % p[1].to_i32()),
+                POW =>    f32_as_i32(p[0].to_f32().powf(p[1].to_f32())),
+                /* We're not going to bother folding this one */
+                TRUNC => continue,
+            },
 
             /* Default */
             _ => continue,
