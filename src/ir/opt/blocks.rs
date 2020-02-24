@@ -229,3 +229,184 @@ pub fn clear_dead_blocks_obj(obj: &mut ir::Object) -> bool {
     }
     progress
 }
+
+fn block_get_jr_block_id(block: &ir::Block) -> Option<u32> {
+    if let Some(instr) = block.instrs.last() {
+        instr_get_jr_block_id(instr)
+    } else {
+        None
+    }
+}
+
+fn block_num_successors(block: &ir::Block) -> u8 {
+    if let Some(instr) = block.instrs.last() {
+        if op_is_jump(instr.op) {
+            match instr.op {
+                ir::Opcode::Jr |
+                ir::Opcode::Return |
+                ir::Opcode::ObjectEnd => 1,
+                _ => 2,
+            }
+        } else {
+            1
+        }
+    } else {
+        1
+    }
+}
+
+pub fn peephole_select_obj(obj: &mut ir::Object) -> bool {
+    let mut progress = false;
+
+    let num_blocks = obj.blocks.len();
+    for idx in 0..num_blocks {
+        /* We're going to look at four blocks */
+        if (idx + 4) as usize > num_blocks {
+            break;
+        }
+
+        let block0 = &obj.blocks[idx + 0];
+        let block1 = &obj.blocks[idx + 1];
+        let block2 = &obj.blocks[idx + 2];
+        let block3 = &obj.blocks[idx + 3];
+
+        /* The first block needs to jump to the second and third blocks */
+        if block_num_successors(&obj.blocks[idx + 0]) != 2 {
+            continue;
+        }
+        if block_get_jr_block_id(block0).unwrap() != block2.id {
+            continue;
+        }
+
+        /* The second block needs to unconditionally jump to the fourth and
+         * only contain two instructions: A Move and the jump
+         */
+        if block_num_successors(block1) != 1 {
+            continue;
+        }
+        if let Some(id) = block_get_jr_block_id(block1) {
+            if id != block3.id {
+                continue;
+            }
+        } else {
+            continue;
+        }
+        if block1.instrs.len() != 2 {
+            continue;
+        }
+        let else_move = block1.instrs.first().unwrap().clone();
+
+        /* The third block must unconditionally jump to the fourth and only
+         * contain one instruction: A Move
+         */
+        if block_num_successors(block2) != 1 {
+            continue;
+        }
+        if block2.instrs.len() != 1 {
+            continue;
+        }
+        let then_move = block2.instrs.first().unwrap().clone();
+
+        /* They have to have the same opcode */
+        if then_move.op != else_move.op {
+            continue;
+        }
+
+        /* They have to be a non-converting move */
+        let sel_op = match then_move.op {
+            ir::Opcode::Move8_8 => ir::Opcode::Select8,
+            ir::Opcode::Move16_16 => ir::Opcode::Select16,
+            ir::Opcode::Move32_32 => ir::Opcode::Select32,
+            ir::Opcode::MoveF_F => ir::Opcode::SelectF,
+            _ => continue,
+        };
+
+        /* They have to have the same destination */
+        if then_move.params[1] != else_move.params[1] {
+            continue;
+        }
+
+        let block0 = &mut obj.blocks[idx + 0];
+        let cmp = block0.instrs.last_mut().unwrap();
+        let jr_op = cmp.op;
+
+        cmp.op = match jr_op {
+            ir::Opcode::JrFalse =>  ir::Opcode::CpEq8,
+            ir::Opcode::JrTrue =>   ir::Opcode::CpNeq8,
+            ir::Opcode::JrNan =>    ir::Opcode::CpNeqF,
+
+            ir::Opcode::JrLt8 =>    ir::Opcode::CpLt8,
+            ir::Opcode::JrLt16 =>   ir::Opcode::CpLt16,
+            ir::Opcode::JrLt32 =>   ir::Opcode::CpLt32,
+            ir::Opcode::JrLtF =>    ir::Opcode::CpLtF,
+            ir::Opcode::JrGt8 =>    ir::Opcode::CpGt8,
+            ir::Opcode::JrGt16 =>   ir::Opcode::CpGt16,
+            ir::Opcode::JrGt32 =>   ir::Opcode::CpGt32,
+            ir::Opcode::JrGtF =>    ir::Opcode::CpGtF,
+            ir::Opcode::JrEq8 =>    ir::Opcode::CpEq8,
+            ir::Opcode::JrEq16 =>   ir::Opcode::CpEq16,
+            ir::Opcode::JrEq32 =>   ir::Opcode::CpEq32,
+            ir::Opcode::JrEqF =>    ir::Opcode::CpEqF,
+            ir::Opcode::JrNeq8 =>   ir::Opcode::CpNeq8,
+            ir::Opcode::JrNeq16 =>  ir::Opcode::CpNeq16,
+            ir::Opcode::JrNeq32 =>  ir::Opcode::CpNeq32,
+            ir::Opcode::JrNeqF =>   ir::Opcode::CpNeqF,
+            ir::Opcode::JrLteq8 =>  ir::Opcode::CpLteq8,
+            ir::Opcode::JrLteq16 => ir::Opcode::CpLteq16,
+            ir::Opcode::JrLteq32 => ir::Opcode::CpLteq32,
+            ir::Opcode::JrLteqF =>  ir::Opcode::CpLteqF,
+            ir::Opcode::JrGteq8 =>  ir::Opcode::CpGteq8,
+            ir::Opcode::JrGteq16 => ir::Opcode::CpGteq16,
+            ir::Opcode::JrGteq32 => ir::Opcode::CpGteq32,
+            ir::Opcode::JrGteqF =>  ir::Opcode::CpGteqF,
+            _ => panic!("Unknown jump instruction"),
+        };
+
+        /* Pop off the Block ID parameter; we don't need it anymore */
+        let block_id = cmp.params.pop().unwrap();
+        assert!(block_id.param_type == ir::ParamType::BlockID);
+
+        /* Three of the jump opcodes require an extra parameter */
+        match jr_op {
+            ir::Opcode::JrFalse |
+            ir::Opcode::JrTrue => {
+                cmp.params.push(ir::Parameter {
+                    param_type: ir::ParamType::Output(ir::DataType::Int8),
+                    value: ir::ParamValue::Constant(0),
+                });
+            },
+            ir::Opcode::JrNan => cmp.params.push(cmp.params[0].clone()),
+            _ => {},
+        }
+
+        /* Grab a temporary local to store the comparison */
+        let tmp_value_byte = obj.local_bytes;
+        obj.local_bytes += 1;
+
+        cmp.params.push(ir::Parameter {
+            param_type: ir::ParamType::Output(ir::DataType::Int8),
+            value: ir::ParamValue::Local(tmp_value_byte),
+        });
+
+        block0.instrs.push(ir::Instruction {
+            ip: obj.last_ip,
+            op: sel_op,
+            params: vec![
+                ir::Parameter {
+                    param_type: ir::ParamType::Input(ir::DataType::Int8),
+                    value: ir::ParamValue::Constant(0),
+                },
+                then_move.params[0].clone(),
+                else_move.params[0].clone(),
+                then_move.params[1].clone(),
+            ],
+        });
+
+        obj.blocks[idx + 1].instrs.clear();
+        obj.blocks[idx + 2].instrs.clear();
+
+        progress = true;
+    }
+
+    progress
+}

@@ -23,7 +23,7 @@
 use std::fmt;
 use crate::ir;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum DataType {
     Int8,
     Int16,
@@ -135,7 +135,7 @@ impl fmt::Display for DataType {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ParamType {
     Input(DataType),
     Output(DataType),
@@ -166,7 +166,7 @@ impl fmt::Display for ParamType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum ParamValue {
     Local(u32),
     Global(u32),
@@ -174,7 +174,7 @@ pub enum ParamValue {
     String(Vec<u8>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Parameter {
     pub param_type: ParamType,
     pub value: ParamValue,

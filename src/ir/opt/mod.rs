@@ -41,6 +41,7 @@ pub fn optimize_obj(obj: &mut ir::Object) -> bool{
         p |= blocks::clear_dead_blocks_obj(obj);
         p |= dead_code::dead_code_obj(obj);
         p |= dead_code::remove_nops_obj(obj);
+        p |= blocks::peephole_select_obj(obj);
 
         if p {
             progress = true;

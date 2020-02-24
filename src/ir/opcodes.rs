@@ -29,7 +29,7 @@ use std::result::Result;
 use crate::ir;
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ProgramInfoSubcode {
     OBJ_STOP = 0,
     OBJ_START = 4,
@@ -65,7 +65,7 @@ impl ProgramInfoSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum InfoSubcode {
     SET_ERROR = 1,
     GET_ERROR = 2,
@@ -107,7 +107,7 @@ impl InfoSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum StringSubcode {
     GET_SIZE = 1,
     ADD = 2,
@@ -161,7 +161,7 @@ impl StringSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum UiReadSubcode {
     GET_VBATT = 1,
     GET_IBATT = 2,
@@ -248,7 +248,7 @@ impl UiReadSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum UiWriteSubcode {
     WRITE_FLUSH = 1,
     FLOATVALUE = 2,
@@ -320,7 +320,7 @@ impl UiWriteSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum UiButtonSubcode {
     SHORTPRESS = 1,
     LONGPRESS = 2,
@@ -386,7 +386,7 @@ impl UiButtonSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum UiDrawSubcode {
     UPDATE = 0,
     PIXEL = 2,
@@ -497,7 +497,7 @@ impl UiDrawSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum MathSubcode {
     EXP = 1,
     MOD = 2,
@@ -581,7 +581,7 @@ impl MathSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ComReadSubcode {
     COMMAND = 14,
 }
@@ -605,7 +605,7 @@ impl ComReadSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ComWriteSubcode {
     REPLY = 14,
 }
@@ -629,7 +629,7 @@ impl ComWriteSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum SoundSubcode {
     BREAK = 0,
     TONE = 1,
@@ -662,7 +662,7 @@ impl SoundSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum InputDeviceSubcode {
     GET_FORMAT = 2,
     CAL_MINMAX = 3,
@@ -749,7 +749,7 @@ impl InputDeviceSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum FileSubcode {
     OPEN_APPEND = 0,
     OPEN_READ = 1,
@@ -863,7 +863,7 @@ impl FileSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ArraySubcode {
     DELETE = 0,
     CREATE8 = 1,
@@ -932,7 +932,7 @@ impl ArraySubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum FilenameSubcode {
     EXIST = 16,
     TOTALSIZE = 17,
@@ -977,7 +977,7 @@ impl FilenameSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ComGetSubcode {
     GET_ON_OFF = 1,
     GET_VISIBLE = 2,
@@ -1040,7 +1040,7 @@ impl ComGetSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ComSetSubcode {
     SET_ON_OFF = 1,
     SET_VISIBLE = 2,
@@ -1094,7 +1094,7 @@ impl ComSetSubcode {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Opcode {
     Error,
     Nop,

@@ -131,7 +131,7 @@ use crate::ir;
 % for op in opcodes.values():
 % if op.subcodes:
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ${op.name}Subcode {
 % for subcode in op.subcodes.values():
     ${subcode.name} = ${subcode.value},
@@ -163,7 +163,7 @@ impl ${op.name}Subcode {
 % endif
 % endfor
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Opcode {
 % for op in opcodes.values():
 % if op.subcodes:
