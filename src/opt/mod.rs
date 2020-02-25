@@ -22,6 +22,7 @@
 
 use crate::ir;
 
+mod algebraic;
 mod blocks;
 mod constant;
 mod dead_code;
@@ -37,6 +38,7 @@ pub fn optimize_obj(obj: &mut ir::Object) -> bool{
     loop {
         let mut p = false;
         p |= memory::copy_propagation_obj(obj);
+        p |= algebraic::algebraic_reduce_obj(obj);
         p |= constant::constant_fold_obj(obj);
         p |= blocks::clear_dead_blocks_obj(obj);
         p |= dead_code::dead_code_obj(obj);
