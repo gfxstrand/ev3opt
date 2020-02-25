@@ -20,8 +20,8 @@
  * IN THE SOFTWARE.
  */
 
-pub mod opcodes;
-pub use opcodes::Opcode;
+mod opcodes;
+pub use opcodes::*;
 
 mod types;
 pub use types::*;

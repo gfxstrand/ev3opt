@@ -433,9 +433,9 @@ pub fn trim_array_lengths_obj(obj: &mut ir::Object) -> bool {
         match instr.op {
             ir::Opcode::InputDevice(subcode) => {
                 match subcode {
-                    ir::opcodes::InputDeviceSubcode::READY_PCT |
-                    ir::opcodes::InputDeviceSubcode::READY_RAW |
-                    ir::opcodes::InputDeviceSubcode::READY_SI => {
+                    ir::InputDeviceSubcode::READY_PCT |
+                    ir::InputDeviceSubcode::READY_RAW |
+                    ir::InputDeviceSubcode::READY_SI => {
                         let num_values = instr.params[4].to_u32();
                         /* We don't know the size of a given value without
                          * querying it with GET_FORMAT which we clearly can't

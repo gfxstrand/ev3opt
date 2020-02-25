@@ -43,7 +43,7 @@ pub fn constant_fold_obj(obj: &mut ir::Object) -> bool {
     let mut progress = false;
 
     use ir::Opcode::*;
-    use ir::opcodes::MathSubcode::*;
+    use ir::MathSubcode::*;
     for instr in obj.iter_instrs_mut() {
         if !has_constant_inputs(instr) {
             continue;
