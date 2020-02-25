@@ -26,6 +26,7 @@ use std::path::Path;
 mod util;
 mod rbf;
 mod ir;
+mod opt;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -45,7 +46,7 @@ fn main() {
         },
     };
 
-    ir::opt::optimize(&mut image);
+    opt::optimize(&mut image);
 
     print!("{}", image);
 
